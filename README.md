@@ -12,7 +12,20 @@ CIVICLENS is a full-stack analytics platform using verified CPGRAMS State/UT sna
 - Historical trends appear only after multiple verified snapshots are registered.
 
 ### Current snapshot
-The repository contains a State/UT snapshot dated 2026-09-25, covering 01/01/2026-25/09/2026. Official source: https://pgportal.gov.in/darpgdashboard
+The repository contains a State/UT snapshot dated 2026-09-25, covering 01/01/2026-25/09/2026. The official CPGRAMS dashboard is the source: https://pgportal.gov.in/darpgdashboard
+
+### Refresh the real government snapshot
+The repository includes a reproducible refresh script that reads the official CPGRAMS State/UT table and validates it using the same data contract as the API.
+
+PowerShell:
+```powershell
+pip install -r backend/requirements.txt
+python scripts/refresh_cpgrams_snapshot.py
+python analytics/analyse.py
+pytest -q
+```
+
+Run the refresh whenever a new official dashboard snapshot is available. The script does not invent missing history and does not silently coerce invalid records.
 
 ### Run locally
 PowerShell:
@@ -29,7 +42,7 @@ Open another terminal:
 python -m http.server 5500 --directory frontend
 ```
 
-Then open http://localhost:5500
+Then open http://localhost:5500. The dashboard automatically uses the local API on localhost and the Render API on the hosted dashboard.
 
 ### API
 - `GET /health`
@@ -38,6 +51,7 @@ Then open http://localhost:5500
 - `GET /api/v1/states?search=Tamil%20Nadu`
 - `GET /api/v1/ageing`
 - `GET /api/v1/insights`
+- `GET /api/v1/data-quality`
 - `GET /api/v1/snapshots`
 - `GET /api/v1/history`
 - `GET /api/v1/history/compare?from_date=YYYY-MM-DD&to_date=YYYY-MM-DD`
