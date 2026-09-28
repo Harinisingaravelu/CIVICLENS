@@ -1,6 +1,7 @@
 fastapi
 uvicorn[standard]
 pandas
+lxml
 python-dotenv
 google-genai
 pytest
