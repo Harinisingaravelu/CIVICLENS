@@ -144,3 +144,9 @@ def test_ingestion_unexpected_error_is_sanitized(client, monkeypatch):
 def test_ai_question_rejects_whitespace_only(client):
     r=client.post("/api/v1/ai/ask",json={"question":"   "})
     assert r.status_code==422
+
+
+def test_state_search_treats_special_characters_as_literal(client):
+    r = client.get("/api/v1/states", params={"search": "["})
+    assert r.status_code == 200
+    assert r.json() == []
