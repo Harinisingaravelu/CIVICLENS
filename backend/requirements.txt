@@ -3,3 +3,5 @@ uvicorn[standard]
 pandas
 python-dotenv
 google-genai
+pytest
+httpx
