@@ -33,6 +33,9 @@ async def observe_requests(request: Request, call_next):
 
 app.include_router(ai_router)
 
+@app.get("/")
+def root(): return {"service":"CIVICLENS API","status":"ok","docs":"/docs","health":"/health","version":"1.5.0"}
+
 @app.get("/health")
 def health(): return {"status":"ok","service":"civic-lens-api","version":"1.5.0"}
 
