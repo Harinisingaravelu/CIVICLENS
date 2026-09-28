@@ -1,14 +1,24 @@
 name: CIVICLENS validation
+
 on:
   push:
   pull_request:
+
 jobs:
-  validate-data:
+  validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install pandas
-      - run: python analytics/analyse.py
+
+      - name: Install dependencies
+        run: pip install -r backend/requirements.txt pytest
+
+      - name: Run data analytics validation
+        run: python analytics/analyse.py
+
+      - name: Run automated tests
+        run: pytest -q
