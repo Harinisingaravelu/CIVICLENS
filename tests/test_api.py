@@ -81,6 +81,13 @@ def test_historical_ai_endpoint(client):
     assert r.status_code==200
     assert r.json()["intent"] in {"historical_comparison","historical_comparison_unavailable"}
 
+def test_main_ai_uses_historical_grounding(client, monkeypatch):
+    from backend.app import ai_routes
+    monkeypatch.setattr(ai_routes,"ask_gemini",lambda question,context: context)
+    r=client.post("/api/v1/ai/ask",json={"question":"What changed since the previous verified snapshot?"})
+    assert r.status_code==200
+    assert r.json()["grounding"]=="verified_snapshot_history"
+
 def test_historical_state_endpoint(client):
     r=client.post("/api/v1/ai/historical",params={"question":"Show Tamil Nadu historical changes."})
     assert r.status_code==200
