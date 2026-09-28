@@ -117,3 +117,20 @@ def test_validation_rejects_reversed_reporting_period():
     }
     with pytest.raises(ValueError, match="Reporting period"):
         validate_dataframe(pd.DataFrame([row]))
+def test_validation_rejects_malformed_reporting_period_separator():
+    from backend.app.analytics import validate_dataframe
+    row = {
+        "state_ut": "Malformed Period State",
+        "snapshot_date": "2026-09-25",
+        "reporting_period": "01/01/2026-25/09/2026-extra",
+        "received": 1,
+        "disposed": 1,
+        "pending_0_60": 1,
+        "pending_61_180": 0,
+        "pending_181_365": 0,
+        "pending_over_365": 0,
+        "pending_total": 1,
+        "source": "https://example.gov.in/data",
+    }
+    with pytest.raises(ValueError, match="Reporting period"):
+        validate_dataframe(pd.DataFrame([row]))
