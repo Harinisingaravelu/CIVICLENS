@@ -69,3 +69,15 @@ def test_readiness_has_database_check():
 def test_ingestion_is_disabled_by_default():
     r=client.post("/api/v1/snapshots/ingest",files={"file":("snapshot.csv",b"state_ut,snapshot_date\nTamil Nadu,2026-01-01","text/csv")})
     assert r.status_code==403
+
+
+def test_historical_ai_endpoint():
+    r=client.post("/api/v1/ai/historical",params={"question":"What changed since the previous verified snapshot?"})
+    assert r.status_code==200
+    assert r.json()["intent"] in {"historical_comparison","historical_comparison_unavailable"}
+
+def test_historical_state_endpoint():
+    r=client.post("/api/v1/ai/historical",params={"question":"Show Tamil Nadu historical changes."})
+    assert r.status_code==200
+    assert r.json()["intent"] in {"historical_state_change","historical_state_unavailable"}
+
