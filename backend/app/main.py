@@ -2,8 +2,8 @@ import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, File, HTTPException, Path, Query, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import Response, JSONResponse
-from .analytics import overview, state_table, ageing, insights
+from fastapi.responses import Response
+from .analytics import overview, state_table, ageing, insights, data_quality
 from .ai_routes import router as ai_router
 from .export import csv_bytes
 from .health import readiness
@@ -63,6 +63,9 @@ def get_ageing(): return ageing()
 
 @app.get("/api/v1/insights")
 def get_insights(): return insights()
+
+@app.get("/api/v1/data-quality")
+def get_data_quality(): return data_quality()
 
 @app.get("/api/v1/snapshots")
 def get_snapshots(): return list_snapshots()
