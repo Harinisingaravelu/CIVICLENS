@@ -17,7 +17,29 @@ function renderHistory(d){
  box.innerHTML=[["Received",a.received],["Disposed",a.disposed],["Pending",a.pending_total],["181–365 days",a.pending_181_365],["365+ days",a.pending_over_365]].map(x=>'<div class="history-card"><small>'+x[0]+'</small><b>'+changeText(x[1])+'</b></div>').join("");
  detail.innerHTML='<p class="history-note">'+esc(d.note)+'</p>';
 }
-async function loadHistory(){try{const d=await get("/api/v1/history");renderHistory(d.latest_comparison)}catch{document.querySelector("#historyStatus").textContent="Historical registry is unavailable."}}
+async function loadStateHistory(){
+ const detail=document.querySelector("#historyDetail");
+ const select=document.querySelector("#historyState");
+ if(!select)return;
+ try{
+  const d=await get("/api/v1/history/state/"+encodeURIComponent(select.value));
+  if(d.status!=="ok"){detail.innerHTML='<p class="history-empty">'+esc(d.reason)+'</p>';return}
+  detail.innerHTML='<div class="state-timeline">'+d.timeline.map(x=>'<div class="timeline-item"><span>'+esc(x.snapshot_date)+'</span><b>Pending '+fmt(x.pending_total)+'</b><small>Received '+fmt(x.received)+' • Disposed '+fmt(x.disposed)+'</small></div>').join("")+'</div><p class="history-note">'+esc(d.note)+'</p>';
+ }catch{detail.innerHTML='<p class="history-empty">State history is unavailable.</p>'}
+}
+async function loadHistory(){
+ try{
+  const d=await get("/api/v1/history");
+  renderHistory(d.latest_comparison);
+  if(d.latest_comparison?.status==="ok"){
+   const states=await get("/api/v1/states?limit=100");
+   const detail=document.querySelector("#historyDetail");
+   detail.innerHTML='<div class="history-state"><label for="historyState">Explore one State/UT timeline</label><select id="historyState">'+states.map(x=>'<option value="'+esc(x.state_ut)+'">'+esc(x.state_ut)+'</option>').join("")+'</select></div><div id="stateTimeline"></div>';
+   document.querySelector("#historyState").addEventListener("change",loadStateHistory);
+   await loadStateHistory();
+  }
+ }catch{document.querySelector("#historyStatus").textContent="Historical registry is unavailable."}
+}
 async function loadSuggestions(){const d=await get("/api/v1/ai/suggestions");const box=document.querySelector("#suggestions");if(!box)return;box.innerHTML=d.suggestions.map(q=>`<button class="suggestion" data-q="${esc(q)}">${esc(q)}</button>`).join("");box.querySelectorAll(".suggestion").forEach(b=>b.addEventListener("click",()=>{document.querySelector("#question").value=b.dataset.q;askAI()}))}
 async function askAI(){const input=document.querySelector("#question"),out=document.querySelector("#answer"),question=input.value.trim();if(question.length<3){out.textContent="Please enter a question with at least 3 characters.";return}out.textContent="Analysing the CIVICLENS dataset…";try{const r=await fetch(API+"/api/v1/ai/ask",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({question})});const d=await r.json();out.textContent=d.answer||d.detail||"No answer returned.";document.querySelector("#evidence").textContent=`Evidence: ${d.snapshot_date} • ${d.reporting_period} • ${d.grounding}`}catch{out.textContent="Backend/Gemini is not available. Start FastAPI and configure backend/.env."}}
 document.querySelector("#ask").addEventListener("click",askAI);document.querySelector("#question").addEventListener("keydown",e=>{if(e.key==="Enter")askAI()});let timer;document.querySelector("#search").addEventListener("input",e=>{clearTimeout(timer);timer=setTimeout(()=>loadDashboard(e.target.value).catch(console.error),250)});Promise.all([loadDashboard(),loadInsights(),loadSuggestions(),loadHistory()]).catch(err=>{console.error(err);document.querySelector("#rows").textContent="API unavailable — start FastAPI";});
