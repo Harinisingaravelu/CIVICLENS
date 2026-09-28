@@ -134,3 +134,10 @@ def test_validation_rejects_malformed_reporting_period_separator():
     }
     with pytest.raises(ValueError, match="Reporting period"):
         validate_dataframe(pd.DataFrame([row]))
+
+
+def test_sqlite_foreign_keys_are_enabled():
+    from backend.app.database import connect, init_db
+    init_db()
+    with connect() as conn:
+        assert conn.execute("PRAGMA foreign_keys").fetchone()[0] == 1
