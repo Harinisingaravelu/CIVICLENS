@@ -140,3 +140,7 @@ def test_ingestion_unexpected_error_is_sanitized(client, monkeypatch):
     assert r.status_code==500
     assert r.json()["detail"]=="Snapshot ingestion failed unexpectedly. Check server logs for details."
     assert "secret internal detail" not in r.text
+
+def test_ai_question_rejects_whitespace_only(client):
+    r=client.post("/api/v1/ai/ask",json={"question":"   "})
+    assert r.status_code==422
