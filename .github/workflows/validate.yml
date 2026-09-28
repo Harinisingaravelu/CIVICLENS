@@ -19,3 +19,9 @@ jobs:
         run: python analytics/analyse.py
       - name: Run automated tests
         run: pytest -q
+      - name: Setup Node.js for frontend validation
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Validate frontend JavaScript
+        run: node --check frontend/app.js
