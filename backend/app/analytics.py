@@ -22,8 +22,8 @@ def validate_dataframe(df: pd.DataFrame) -> pd.DataFrame:
         raise ValueError("Dataset contains blank State/UT names.")
     if df["state_ut"].duplicated().any():
         raise ValueError("Dataset contains duplicate State/UT records.")
-    if df["disposed"].gt(df["received"]).any():
-        raise ValueError("Dataset contains disposed values greater than received values.")
+    # CPGRAMS disposals can include grievances carried forward from earlier periods,
+    # so disposed is not required to be <= current-period received.
     ageing_sum = df[["pending_0_60", "pending_61_180", "pending_181_365", "pending_over_365"]].sum(axis=1)
     if not ageing_sum.eq(df["pending_total"]).all():
         raise ValueError("Pending ageing buckets do not reconcile with pending_total.")
