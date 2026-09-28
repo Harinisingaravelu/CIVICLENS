@@ -81,3 +81,38 @@ def test_duplicate_snapshot_registration_is_idempotent():
     second = register_dataframe(df)
     assert first["status"] in {"registered", "already_registered"}
     assert second["status"] == "already_registered"
+def test_validation_rejects_invalid_snapshot_date():
+    from backend.app.analytics import validate_dataframe
+    row = {
+        "state_ut": "Invalid Date State",
+        "snapshot_date": "2026-99-99",
+        "reporting_period": "01/01/2026-25/09/2026",
+        "received": 1,
+        "disposed": 1,
+        "pending_0_60": 1,
+        "pending_61_180": 0,
+        "pending_181_365": 0,
+        "pending_over_365": 0,
+        "pending_total": 1,
+        "source": "https://example.gov.in/data",
+    }
+    with pytest.raises(ValueError, match="Snapshot date"):
+        validate_dataframe(pd.DataFrame([row]))
+
+def test_validation_rejects_reversed_reporting_period():
+    from backend.app.analytics import validate_dataframe
+    row = {
+        "state_ut": "Reversed Period State",
+        "snapshot_date": "2026-09-25",
+        "reporting_period": "25/09/2026-01/01/2026",
+        "received": 1,
+        "disposed": 1,
+        "pending_0_60": 1,
+        "pending_61_180": 0,
+        "pending_181_365": 0,
+        "pending_over_365": 0,
+        "pending_total": 1,
+        "source": "https://example.gov.in/data",
+    }
+    with pytest.raises(ValueError, match="Reporting period"):
+        validate_dataframe(pd.DataFrame([row]))
