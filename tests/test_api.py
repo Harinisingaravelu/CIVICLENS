@@ -92,4 +92,14 @@ def test_historical_state_endpoint(client):
     r=client.post("/api/v1/ai/historical",params={"question":"Show Tamil Nadu historical changes."})
     assert r.status_code==200
     assert r.json()["intent"] in {"historical_state_change","historical_state_unavailable"}
+def test_invalid_state_limit_is_rejected(client):
+    r=client.get("/api/v1/states",params={"limit":0})
+    assert r.status_code==422
 
+def test_invalid_history_date_format_is_rejected(client):
+    r=client.get("/api/v1/history/compare",params={"from_date":"bad","to_date":"2026-09-25"})
+    assert r.status_code==422
+
+def test_ai_question_length_is_validated(client):
+    r=client.post("/api/v1/ai/ask",json={"question":"x"})
+    assert r.status_code==422
