@@ -27,3 +27,18 @@ def test_deterministic_ageing_query(monkeypatch):
     monkeypatch.setattr(ai_routes,"ask_gemini",lambda question,context: context)
     r=client.post("/api/v1/ai/ask",json={"question":"Which ageing bucket is largest?"})
     assert r.status_code==200; assert r.json()["intent"]=="largest_ageing_bucket"
+
+
+def test_metrics():
+    client.get("/health")
+    r=client.get("/metrics")
+    assert r.status_code==200
+    body=r.json()
+    assert body["requests_total"]>=1
+    assert isinstance(body["routes"],dict)
+
+def test_readiness_has_database_check():
+    r=client.get("/ready")
+    assert r.status_code==200
+    assert r.json()["checks"]["dataset"] is True
+    assert r.json()["checks"]["database"] is True
