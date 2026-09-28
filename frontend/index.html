@@ -1,28 +1,13 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>CIVICLENS — Grievance Intelligence</title>
-  <link rel="stylesheet" href="style.css">
-</head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CIVICLENS — Public Grievance Intelligence</title><link rel="stylesheet" href="style.css"></head>
 <body>
-  <header>
-    <div class="brand">CIVIC<span>LENS</span></div>
-    <div class="status"><i></i> Data Intelligence</div>
-  </header>
-  <main>
-    <section class="hero">
-      <p class="eyebrow">PUBLIC GRIEVANCE ANALYTICS</p>
-      <h1>See the workload.<br><span>Understand the signal.</span></h1>
-      <p>Evidence-led analytics for grievance receipts, disposal and pending workload.</p>
-    </section>
-    <section id="kpis" class="grid"></section>
-    <section class="panel">
-      <div class="panel-head"><h2>State Explorer</h2><span id="rows"></span></div>
-      <div class="table-wrap"><table><thead><tr><th>State / UT</th><th>Received</th><th>Disposed</th><th>Pending</th></tr></thead><tbody id="table"></tbody></table></div>
-    </section>
-  </main>
-  <script src="app.js"></script>
-</body>
-</html>
+<header><div class="brand">CIVIC<span>LENS</span></div><div class="status"><i></i> Evidence-led analytics</div></header>
+<main>
+<section class="hero"><p class="eyebrow">PUBLIC GRIEVANCE INTELLIGENCE</p><h1>See the workload.<br><span>Understand the signal.</span></h1><p>Explore grievance receipts, disposal, pending workload and ageing using a transparent government-data snapshot.</p></section>
+<section id="kpis" class="grid"></section>
+<section class="panel"><div class="panel-head"><div><h2>State Explorer</h2><p id="rows"></p></div></div><div class="table-wrap"><table><thead><tr><th>State / UT</th><th>Received</th><th>Disposed</th><th>Pending</th><th>Disposal rate</th></tr></thead><tbody id="table"></tbody></table></div></section>
+<section class="panel"><div class="panel-head"><div><h2>Pending Ageing</h2><p>Current pending workload by ageing bucket.</p></div></div><div id="ageing" class="age-grid"></div></section>
+<section class="panel copilot"><p class="eyebrow">GEMINI ANALYTICS COPILOT</p><h2>Ask the data</h2><p>Questions are answered from the CIVICLENS dataset, not from invented values.</p><div class="ask"><input id="question" placeholder="Example: What is the pending workload in Tamil Nadu?"><button id="ask">Analyse</button></div><pre id="answer">Ask a question to begin.</pre></section>
+</main><script src="app.js"></script></body></html>
