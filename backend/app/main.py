@@ -1,6 +1,6 @@
 import os
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, File, HTTPException, Query, Request, UploadFile
+from fastapi import FastAPI, File, HTTPException, Path, Query, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 from .analytics import overview, state_table, ageing, insights
@@ -72,7 +72,7 @@ def get_history_compare(from_date:str=Query(...,pattern=r"^\d{4}-\d{2}-\d{2}$"),
         raise HTTPException(status_code=400,detail=str(exc)) from exc
 
 @app.get("/api/v1/history/state/{state_ut}")
-def get_state_history(state_ut:str=Query(...,min_length=1,max_length=100)):
+def get_state_history(state_ut:str=Path(...,min_length=1,max_length=100)):
     return state_history(state_ut)
 
 @app.post("/api/v1/snapshots/ingest")
