@@ -14,13 +14,15 @@ from .history import list_history, compare_snapshots, latest_comparison, state_h
 from .historical_ai import historical_result
 from .monitoring import record_request, metrics, timer
 
+API_VERSION = "1.6.0"
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
     register_current_snapshot()
     yield
 
-app=FastAPI(title="CIVICLENS API",version="1.5.0",lifespan=lifespan)
+app=FastAPI(title="CIVICLENS API",version=API_VERSION,lifespan=lifespan)
 origins=[x.strip() for x in os.getenv("CORS_ORIGINS","http://localhost:5500,http://127.0.0.1:5500").split(",") if x.strip()]
 app.add_middleware(CORSMiddleware,allow_origins=origins,allow_methods=["GET","HEAD","POST"],allow_headers=["Content-Type"])
 
@@ -34,7 +36,7 @@ async def observe_requests(request: Request, call_next):
 app.include_router(ai_router)
 
 @app.get("/")
-def root(): return {"service":"CIVICLENS API","status":"ok","docs":"/docs","health":"/health","version":"1.5.0"}
+def root(): return {"service":"CIVICLENS API","status":"ok","docs":"/docs","health":"/health","version":API_VERSION}
 
 @app.head("/")
 def root_head(): return Response(status_code=200)
@@ -43,7 +45,7 @@ def root_head(): return Response(status_code=200)
 def favicon(): return Response(content='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="#0f172a"/><circle cx="32" cy="32" r="16" fill="#14b8a6"/><path d="M23 32h18M32 23v18" stroke="white" stroke-width="5" stroke-linecap="round"/></svg>',media_type="image/svg+xml")
 
 @app.get("/health")
-def health(): return {"status":"ok","service":"civic-lens-api","version":"1.5.0"}
+def health(): return {"status":"ok","service":"civic-lens-api","version":API_VERSION}
 
 @app.get("/ready")
 def ready(): return readiness()
