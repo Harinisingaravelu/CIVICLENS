@@ -58,3 +58,14 @@ Lists registered verified snapshots and their provenance metadata, including SHA
 `POST /api/v1/snapshots/register`
 
 Registers the current validated CSV snapshot in the local SQLite registry. Registration is idempotent for the same dataset fingerprint.
+
+
+## Monitoring
+### Health
+`GET /health` returns a lightweight liveness response.
+
+### Readiness
+`GET /ready` checks both the validated dataset and SQLite database. It returns `ready` only when both checks succeed.
+
+### Runtime metrics
+`GET /metrics` returns in-process request counts and a small recent-request buffer. This is intentionally lightweight and does not expose request bodies, API keys or user questions.
