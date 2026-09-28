@@ -37,8 +37,8 @@ def validate_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     if snapshot_dates.isna().any():
         raise ValueError("Snapshot date must use YYYY-MM-DD format.")
     periods = df["reporting_period"].astype(str).str.strip()
-    parts = periods.str.split("-", n=1, expand=True)
-    if parts.shape[1] != 2:
+    parts = periods.str.extract(r"^(\\d{2}/\\d{2}/\\d{4})-(\\d{2}/\\d{2}/\\d{4})$")
+    if parts.isna().any().any():
         raise ValueError("Reporting period must use START-END format.")
     start_dates = pd.to_datetime(parts[0], format="%d/%m/%Y", errors="coerce")
     end_dates = pd.to_datetime(parts[1], format="%d/%m/%Y", errors="coerce")
