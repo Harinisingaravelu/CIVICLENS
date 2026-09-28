@@ -24,10 +24,24 @@ def register_dataframe(df) -> dict:
         ).fetchone()
         if duplicate:
             return {"status":"already_registered","snapshot_id":duplicate[0],"reason":"same snapshot identity already exists"}
-        cur = conn.execute(
-            "INSERT INTO snapshots(snapshot_date,reporting_period,source_url,retrieved_at,record_count,dataset_sha256) VALUES(?,?,?,?,?,?)",
-            (snapshot_date, reporting_period, source_url, retrieved_at, len(df), digest),
-        )
+        try:
+            cur = conn.execute(
+                "INSERT INTO snapshots(snapshot_date,reporting_period,source_url,retrieved_at,record_count,dataset_sha256) VALUES(?,?,?,?,?,?)",
+                (snapshot_date, reporting_period, source_url, retrieved_at, len(df), digest),
+            )
+        except Exception as exc:
+            if "UNIQUE constraint failed" not in str(exc):
+                raise
+            existing = conn.execute("SELECT id FROM snapshots WHERE dataset_sha256=?", (digest,)).fetchone()
+            if existing:
+                return {"status":"already_registered","snapshot_id":existing[0],"dataset_sha256":digest}
+            duplicate = conn.execute(
+                "SELECT id FROM snapshots WHERE snapshot_date=? AND reporting_period=? AND source_url=?",
+                (snapshot_date, reporting_period, source_url),
+            ).fetchone()
+            if duplicate:
+                return {"status":"already_registered","snapshot_id":duplicate[0],"reason":"same snapshot identity already exists"}
+            raise
         snapshot_id = cur.lastrowid
         state_cols = ["state_ut","received","disposed","pending_0_60","pending_61_180","pending_181_365","pending_over_365","pending_total"]
         conn.executemany(
