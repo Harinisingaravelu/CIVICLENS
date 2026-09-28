@@ -97,6 +97,8 @@ async def ingest_snapshot(file: UploadFile=File(...)):
         return ingest_csv_bytes(content)
     except ValueError as exc:
         raise HTTPException(status_code=400,detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=500,detail="Snapshot ingestion failed unexpectedly. Check server logs for details.") from exc
 
 @app.get("/api/v1/export/csv")
 def export_csv():
