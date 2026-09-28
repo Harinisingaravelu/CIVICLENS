@@ -103,3 +103,24 @@ def test_invalid_history_date_format_is_rejected(client):
 def test_ai_question_length_is_validated(client):
     r=client.post("/api/v1/ai/ask",json={"question":"x"})
     assert r.status_code==422
+def test_ingestion_rejects_malformed_csv_when_enabled(client, monkeypatch):
+    monkeypatch.setenv("ENABLE_SNAPSHOT_INGESTION", "true")
+    r=client.post("/api/v1/snapshots/ingest",files={"file":("snapshot.csv",b"not,a,valid,dataset\n1,2,3,4","text/csv")})
+    assert r.status_code==400
+
+def test_ingestion_rejects_oversized_upload_when_enabled(client, monkeypatch):
+    monkeypatch.setenv("ENABLE_SNAPSHOT_INGESTION", "true")
+    oversized=b"x"*(5*1024*1024+1)
+    r=client.post("/api/v1/snapshots/ingest",files={"file":("snapshot.csv",oversized,"text/csv")})
+    assert r.status_code==400
+
+def test_ingestion_accepts_valid_snapshot_when_enabled(client, monkeypatch):
+    monkeypatch.setenv("ENABLE_SNAPSHOT_INGESTION", "true")
+    csv = """state_ut,snapshot_date,reporting_period,received,disposed,pending_0_60,pending_61_180,pending_181_365,pending_over_365,pending_total,source
+API Test State,2099-01-01,01/01/2099-01/01/2099,10,12,1,1,1,1,4,https://example.gov.in/data
+"""
+    r=client.post("/api/v1/snapshots/ingest",files={"file":("snapshot.csv",csv,"text/csv")})
+    assert r.status_code==200
+    body=r.json()
+    assert body["validation"]["status"]=="passed"
+    assert body["validation"]["record_count"]==1
