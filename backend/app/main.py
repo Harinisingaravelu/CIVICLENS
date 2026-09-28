@@ -81,7 +81,10 @@ def get_history_compare(from_date:str=Query(...,pattern=r"^\d{4}-\d{2}-\d{2}$"),
 
 @app.get("/api/v1/history/state/{state_ut}")
 def get_state_history(state_ut:str=Path(...,min_length=1,max_length=100)):
-    return state_history(state_ut)
+    result = state_history(state_ut)
+    if result.get("status") == "unavailable" and "not present" in result.get("reason", ""):
+        raise HTTPException(status_code=404, detail=result["reason"])
+    return result
 
 @app.post("/api/v1/snapshots/ingest")
 async def ingest_snapshot(file: UploadFile=File(...)):
