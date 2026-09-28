@@ -35,3 +35,12 @@ Disposal rate and pressure index are analytical calculations. pressure_index is 
 
 ### Docker
 Copy backend/.env.example to backend/.env, add your own key, then run: docker compose up --build
+
+
+### Reliability and monitoring
+- `GET /health` provides liveness.
+- `GET /ready` checks the dataset and SQLite database before reporting readiness.
+- `GET /metrics` exposes lightweight in-process request counts and recent timing metadata.
+- Docker and Compose include healthchecks.
+- The container runs as a non-root user.
+- Monitoring does not store request bodies, API keys or user questions.
