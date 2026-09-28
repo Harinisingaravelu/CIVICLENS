@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
 import csv
 
-app = FastAPI(title="CIVICLENS API", version="0.1.0")
+app = FastAPI(title="CIVICLENS API", version="0.2.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -20,26 +20,33 @@ def load_rows():
     with DATA_FILE.open("r", encoding="utf-8-sig") as f:
         return list(csv.DictReader(f))
 
+def num(rows, key):
+    return sum(float(r.get(key) or 0) for r in rows)
+
 @app.get("/health")
 def health():
-    return {"status": "ok", "service": "civic-lens-api"}
+    return {"status": "ok", "service": "civic-lens-api", "version": "0.2.0"}
 
 @app.get("/api/v1/overview")
 def overview():
     rows = load_rows()
-    def n(k):
-        return sum(float(r.get(k) or 0) for r in rows)
-    received = n("received")
-    disposed = n("disposed")
-    pending = n("pending_total")
+    received = num(rows, "received")
+    disposed = num(rows, "disposed")
+    pending = num(rows, "pending_total")
     return {
         "rows": len(rows),
-        "received": received,
-        "disposed": disposed,
-        "pending": pending,
-        "disposal_rate": round(disposed / received * 100, 2) if received else 0
+        "received": int(received),
+        "disposed": int(disposed),
+        "pending": int(pending),
+        "disposal_rate": round(disposed / received * 100, 2) if received else 0,
     }
 
 @app.get("/api/v1/states")
 def states():
-    return load_rows()
+    rows = load_rows()
+    for r in rows:
+        for key in ("received","disposed","pending_total","pending_0_60","pending_61_180","pending_181_365","pending_over_365"):
+            r[key] = float(r.get(key) or 0)
+        r["disposal_rate"] = round(r["disposed"] / r["received"] * 100, 2) if r["received"] else 0
+        r["ageing_181_plus"] = r["pending_181_365"] + r["pending_over_365"]
+    return sorted(rows, key=lambda x: x["pending_total"], reverse=True)
