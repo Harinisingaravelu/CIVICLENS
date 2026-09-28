@@ -17,5 +17,14 @@ def ingest_csv_bytes(content: bytes) -> dict:
     except Exception as exc:
         raise ValueError("Uploaded file is not a readable CSV dataset.") from exc
 
-    validate_dataframe(df)
-    return register_dataframe(df)
+    validated = validate_dataframe(df)
+    result = register_dataframe(validated)
+    result["validation"] = {
+        "status": "passed",
+        "required_columns": len(REQUIRED_COLUMNS),
+        "record_count": int(len(validated)),
+        "snapshot_date": str(validated["snapshot_date"].iloc[0]),
+        "reporting_period": str(validated["reporting_period"].iloc[0]),
+        "source_url": str(validated["source"].iloc[0]),
+    }
+    return result
