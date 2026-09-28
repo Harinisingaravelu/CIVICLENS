@@ -33,6 +33,17 @@ def validate_dataframe(df: pd.DataFrame) -> pd.DataFrame:
         raise ValueError("Every source URL must use HTTPS.")
     if df["snapshot_date"].nunique() != 1 or df["reporting_period"].nunique() != 1 or df["source"].nunique() != 1:
         raise ValueError("A snapshot CSV must contain exactly one snapshot date, reporting period and source URL.")
+    snapshot_dates = pd.to_datetime(df["snapshot_date"], format="%Y-%m-%d", errors="coerce")
+    if snapshot_dates.isna().any():
+        raise ValueError("Snapshot date must use YYYY-MM-DD format.")
+    periods = df["reporting_period"].astype(str).str.strip()
+    parts = periods.str.split("-", n=1, expand=True)
+    if parts.shape[1] != 2:
+        raise ValueError("Reporting period must use START-END format.")
+    start_dates = pd.to_datetime(parts[0], format="%d/%m/%Y", errors="coerce")
+    end_dates = pd.to_datetime(parts[1], format="%d/%m/%Y", errors="coerce")
+    if start_dates.isna().any() or end_dates.isna().any() or (start_dates > end_dates).any():
+        raise ValueError("Reporting period must contain valid DD/MM/YYYY dates in chronological order.")
     return df
 
 def _add_metrics(df: pd.DataFrame) -> pd.DataFrame:
