@@ -124,3 +124,6 @@ API Test State,2099-01-01,01/01/2099-01/01/2099,10,12,1,1,1,1,4,https://example.
     body=r.json()
     assert body["validation"]["status"]=="passed"
     assert body["validation"]["record_count"]==1
+def test_unknown_state_history_returns_not_found(client):
+    r=client.get("/api/v1/history/state/Definitely%20Not%20A%20State")
+    assert r.status_code==404
