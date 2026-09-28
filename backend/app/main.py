@@ -1,31 +1,23 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
-from .analytics import overview, state_table, ageing
+from .analytics import overview, state_table, ageing, insights
 from .ai_routes import router as ai_router
 
-app = FastAPI(title="CIVICLENS API", version="1.0.0")
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
+app=FastAPI(title="CIVICLENS API",version="1.1.0")
+app.add_middleware(CORSMiddleware,allow_origins=["*"],allow_methods=["GET","POST"],allow_headers=["Content-Type"])
 app.include_router(ai_router)
 
 @app.get("/health")
-def health():
-    return {"status": "ok", "service": "civic-lens-api", "version": "1.0.0"}
+def health(): return {"status":"ok","service":"civic-lens-api","version":"1.1.0"}
 
 @app.get("/api/v1/overview")
-def get_overview():
-    return overview()
+def get_overview(): return overview()
 
 @app.get("/api/v1/states")
-def get_states():
-    return state_table()
+def get_states(search: str|None=Query(default=None,max_length=100),limit:int=Query(default=100,ge=1,le=100)): return state_table(search=search,limit=limit)
 
 @app.get("/api/v1/ageing")
-def get_ageing():
-    return ageing()
+def get_ageing(): return ageing()
+
+@app.get("/api/v1/insights")
+def get_insights(): return insights()
