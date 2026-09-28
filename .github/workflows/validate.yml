@@ -9,16 +9,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-
+          cache: "pip"
       - name: Install dependencies
-        run: pip install -r backend/requirements.txt pytest
-
+        run: pip install -r backend/requirements.txt
       - name: Run data analytics validation
         run: python analytics/analyse.py
-
       - name: Run automated tests
         run: pytest -q
