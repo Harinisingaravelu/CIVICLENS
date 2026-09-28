@@ -10,7 +10,7 @@ Returns service status.
 ## Readiness
 `GET /ready`
 
-Loads and validates the dataset before returning readiness.
+Loads and validates the dataset and checks the SQLite registry.
 
 ## Overview
 `GET /api/v1/overview`
@@ -32,6 +32,45 @@ Returns pending workload by ageing bucket.
 
 Returns descriptive workload observations from the current snapshot.
 
+## Snapshots
+`GET /api/v1/snapshots`
+
+Lists verified snapshots and provenance metadata, including SHA-256 dataset fingerprints.
+
+`POST /api/v1/snapshots/register`
+
+Registers the current repository CSV. Registration is idempotent.
+
+## Historical intelligence
+`GET /api/v1/history`
+
+Returns the verified snapshot registry plus the latest comparison. If fewer than two verified snapshots exist, the comparison returns `status=unavailable`.
+
+`GET /api/v1/history/compare?from_date=YYYY-MM-DD&to_date=YYYY-MM-DD`
+
+Compares two registered snapshots. The response includes aggregate deltas, percentage changes where calculable, State/UT coverage differences and per-State/UT changes.
+
+Historical changes are descriptive differences, not causal findings or performance rankings.
+
+## Controlled snapshot ingestion
+`POST /api/v1/snapshots/ingest`
+
+Accepts one validated CSV snapshot as multipart upload.
+
+This endpoint is **disabled by default**. Set `ENABLE_SNAPSHOT_INGESTION=true` only for a controlled local/admin workflow. The service enforces:
+- CSV parsing
+- 5 MB upload limit
+- required schema
+- numeric and non-negative measures
+- ageing reconciliation
+- unique State/UT records
+- `disposed <= received`
+- one snapshot date/reporting period/source per file
+- HTTPS source URLs
+- duplicate snapshot identity/fingerprint protection
+
+Do not expose this endpoint publicly without adding an authentication/authorization layer.
+
 ## AI
 `POST /api/v1/ai/ask`
 
@@ -40,32 +79,17 @@ Body:
 {"question":"What is the pending workload in Tamil Nadu?"}
 ```
 
-Gemini answers are grounded in the CIVICLENS dataset context.
+Gemini answers are grounded in deterministic CIVICLENS results or a compact dataset context.
 
 ## Export
 `GET /api/v1/export/csv`
 
-Downloads the validated dataset used by the application.
-
-## Interpretation
-CIVICLENS calculations are independent analytics. The exploratory `pressure_index` is not an official government metric.
-
-## Snapshots
-`GET /api/v1/snapshots`
-
-Lists registered verified snapshots and their provenance metadata, including SHA-256 dataset fingerprint.
-
-`POST /api/v1/snapshots/register`
-
-Registers the current validated CSV snapshot in the local SQLite registry. Registration is idempotent for the same dataset fingerprint.
-
+Downloads the validated current dataset used by the application.
 
 ## Monitoring
-### Health
-`GET /health` returns a lightweight liveness response.
+`GET /metrics`
 
-### Readiness
-`GET /ready` checks both the validated dataset and SQLite database. It returns `ready` only when both checks succeed.
+Returns lightweight in-process request counts and recent timing metadata. Request bodies, API keys and user questions are not stored.
 
-### Runtime metrics
-`GET /metrics` returns in-process request counts and a small recent-request buffer. This is intentionally lightweight and does not expose request bodies, API keys or user questions.
+## Interpretation
+Disposal rate and pressure index are analytical calculations. `pressure_index` is a CIVICLENS exploratory metric, not an official government score. Snapshot and historical observations should not be treated as causal explanations or overall performance rankings.
