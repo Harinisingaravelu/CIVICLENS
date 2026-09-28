@@ -10,7 +10,7 @@ from .health import readiness
 from .database import init_db, list_snapshots
 from .snapshot import register_current_snapshot
 from .ingestion import ingest_csv_bytes
-from .history import list_history, compare_snapshots, latest_comparison
+from .history import list_history, compare_snapshots, latest_comparison, state_history
 from .monitoring import record_request, metrics, timer
 
 @asynccontextmanager
@@ -70,6 +70,10 @@ def get_history_compare(from_date:str=Query(...,pattern=r"^\d{4}-\d{2}-\d{2}$"),
         return compare_snapshots(from_date,to_date)
     except ValueError as exc:
         raise HTTPException(status_code=400,detail=str(exc)) from exc
+
+@app.get("/api/v1/history/state/{state_ut}")
+def get_state_history(state_ut:str=Query(...,min_length=1,max_length=100)):
+    return state_history(state_ut)
 
 @app.post("/api/v1/snapshots/ingest")
 async def ingest_snapshot(file: UploadFile=File(...)):
