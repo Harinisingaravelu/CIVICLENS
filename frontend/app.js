@@ -1,4 +1,4 @@
-const API=window.CIVICLENS_API||"http://localhost:8000";
+const API=window.CIVICLENS_API||"https://civiclens-api-s144.onrender.com";
 const fmt=n=>Number(n||0).toLocaleString("en-IN");
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 async function get(path){const r=await fetch(API+path);if(!r.ok)throw new Error(await r.text());return r.json()}
