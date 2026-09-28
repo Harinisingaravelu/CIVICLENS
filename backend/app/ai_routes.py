@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from .analytics import load_data
 from .gemini import ask_gemini
 from .query_engine import answer_question, compact_context
@@ -9,6 +9,14 @@ router = APIRouter(prefix="/api/v1/ai", tags=["AI"])
 
 class AskRequest(BaseModel):
     question: str = Field(min_length=3, max_length=500)
+
+    @field_validator("question")
+    @classmethod
+    def question_must_contain_text(cls, value: str) -> str:
+        value = value.strip()
+        if len(value) < 3:
+            raise ValueError("Question must contain at least 3 non-whitespace characters.")
+        return value
 
 SUGGESTIONS = [
     "What is the pending workload in Tamil Nadu?",
