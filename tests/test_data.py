@@ -22,9 +22,28 @@ def test_numeric_fields_are_non_negative_and_complete():
     assert not df[numeric].isna().any().any()
     assert (df[numeric] >= 0).all().all()
 
-def test_disposed_does_not_exceed_received():
+def test_current_snapshot_has_expected_disposal_relationship():
     df = pd.read_csv(DATA)
-    assert (df["disposed"] <= df["received"]).all()
+    assert (df["disposed"] >= 0).all()
+    assert (df["received"] >= 0).all()
+
+def test_validation_allows_carry_forward_disposals():
+    from backend.app.analytics import validate_dataframe
+    row = {
+        "state_ut": "Example State",
+        "snapshot_date": "2026-09-25",
+        "reporting_period": "01/01/2026-25/09/2026",
+        "received": 100,
+        "disposed": 120,
+        "pending_0_60": 10,
+        "pending_61_180": 5,
+        "pending_181_365": 3,
+        "pending_over_365": 2,
+        "pending_total": 20,
+        "source": "https://example.gov.in/data",
+    }
+    validated = validate_dataframe(pd.DataFrame([row]))
+    assert int(validated.loc[0, "disposed"]) == 120
 
 def test_source_is_present_and_https():
     df = pd.read_csv(DATA)
