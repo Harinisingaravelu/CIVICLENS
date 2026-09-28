@@ -11,6 +11,7 @@ from .database import init_db, list_snapshots
 from .snapshot import register_current_snapshot
 from .ingestion import ingest_csv_bytes
 from .history import list_history, compare_snapshots, latest_comparison, state_history
+from .historical_ai import historical_result
 from .monitoring import record_request, metrics, timer
 
 @asynccontextmanager
@@ -59,6 +60,13 @@ def get_snapshots(): return list_snapshots()
 
 @app.post("/api/v1/snapshots/register")
 def register_snapshot(): return register_current_snapshot()
+
+@app.post("/api/v1/ai/historical")
+def historical_ai(question: str = Query(..., min_length=3, max_length=500)):
+    result = historical_result(question)
+    if result is None:
+        return {"status":"unsupported","reason":"Ask about historical, previous, change, or trend information."}
+    return result
 
 @app.get("/api/v1/history")
 def get_history():
