@@ -12,6 +12,7 @@ STATE_COLUMNS = [
     "pending_61_180",
     "pending_181_365",
     "pending_over_365",
+    "pending_total",
 ]
 
 def _snapshot_row(snapshot_date: str):
