@@ -12,6 +12,8 @@ from __future__ import annotations
 from io import StringIO
 from pathlib import Path
 import re
+import tempfile
+import time
 
 import httpx
 import pandas as pd
@@ -100,16 +102,35 @@ def parse_state_table(html: str) -> pd.DataFrame:
 
 
 def refresh() -> pd.DataFrame:
-    response = httpx.get(
-        SOURCE_URL,
-        timeout=30.0,
-        follow_redirects=True,
-        headers={"User-Agent": "CIVICLENS-data-refresh/1.0"},
-    )
-    response.raise_for_status()
-    dataframe = parse_state_table(response.text)
-    dataframe.to_csv(DATA_FILE, index=False)
-    return dataframe
+    last_error: Exception | None = None
+    for attempt in range(3):
+        try:
+            response = httpx.get(
+                SOURCE_URL,
+                timeout=httpx.Timeout(30.0, connect=10.0),
+                follow_redirects=True,
+                headers={"User-Agent": "CIVICLENS-data-refresh/1.0"},
+            )
+            response.raise_for_status()
+            dataframe = parse_state_table(response.text)
+
+            # Replace the snapshot atomically so an interrupted refresh never
+            # leaves a partially-written CSV for the API to consume.
+            DATA_FILE.parent.mkdir(parents=True, exist_ok=True)
+            with tempfile.NamedTemporaryFile(
+                "w", encoding="utf-8", newline="", dir=DATA_FILE.parent,
+                delete=False, suffix=".tmp"
+            ) as tmp:
+                temp_path = Path(tmp.name)
+                dataframe.to_csv(tmp, index=False)
+            temp_path.replace(DATA_FILE)
+            return dataframe
+        except (httpx.HTTPError, ValueError) as exc:
+            last_error = exc
+            if attempt < 2:
+                time.sleep(2 ** attempt)
+
+    raise RuntimeError(f"CPGRAMS refresh failed after 3 attempts: {last_error}") from last_error
 
 
 if __name__ == "__main__":
