@@ -48,7 +48,7 @@ Then open http://localhost:5500
 Snapshot upload is available at `POST /api/v1/snapshots/ingest`, but `ENABLE_SNAPSHOT_INGESTION=false` by default. Enable it only for a controlled local/admin workflow and add authentication before any external deployment.
 
 ### Data integrity
-The loader and ingestion pipeline reject missing/non-numeric values, negative measures, duplicate State/UT records, disposed values above received values, invalid HTTPS sources and ageing totals that do not reconcile. Missing values are never silently converted to zero.
+The loader and ingestion pipeline reject missing/non-numeric values, negative measures, duplicate State/UT records, invalid HTTPS sources and ageing totals that do not reconcile. Missing values are never silently converted to zero.
 
 ### Historical intelligence
 The snapshot registry stores dataset fingerprints and State/UT records. Once two verified snapshots exist, CIVICLENS calculates descriptive changes between them. It does not manufacture historical values.
@@ -69,3 +69,6 @@ docker compose up --build
 - Docker and Compose include healthchecks.
 - The container runs as a non-root user.
 - Monitoring does not store request bodies, API keys or user questions.
+
+### CPGRAMS disposal caveat
+The official dashboard notes that disposals can include grievances carried forward from earlier periods. Therefore CIVICLENS does not reject a record merely because disposed exceeds current-period received; it validates non-negative values and the pending-ageing reconciliation instead.
