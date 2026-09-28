@@ -3,8 +3,9 @@
 <meta name="description" content="CIVICLENS — evidence-led public grievance workload analytics">
 <title>CIVICLENS — Public Grievance Intelligence</title><link rel="stylesheet" href="style.css"></head>
 <body><header><div class="brand">CIVIC<span>LENS</span></div><div class="status"><i></i> Evidence-led analytics</div></header>
-<main><section class="hero"><p class="eyebrow">PUBLIC GRIEVANCE INTELLIGENCE</p><h1>See the workload.<br><span>Understand the signal.</span></h1><p>Explore grievance receipts, disposal, pending workload and ageing using a transparent government-data snapshot.</p><p id="snapshot" class="source-line">Loading verified snapshot…</p></section>
+<main><section class="hero"><p class="eyebrow">PUBLIC GRIEVANCE INTELLIGENCE</p><h1>See the workload.<br><span>Understand the signal.</span></h1><p>Explore grievance receipts, disposal, pending workload and ageing from a transparent government-data snapshot.</p><div class="meta"><span id="snapshot">Loading verified snapshot…</span><span id="source"></span></div></section>
 <section id="kpis" class="grid"></section>
+<section class="visual-grid"><section class="panel chart-panel"><div class="panel-head"><div><h2>Pending Ageing Distribution</h2><p>How the current pending workload is distributed by age.</p></div></div><div id="ageChart" class="bar-chart"></div></section><section class="panel"><div class="panel-head"><div><h2>Snapshot Registry</h2><p>Verified datasets available to the application.</p></div></div><div id="snapshots" class="snapshot-list">Loading…</div></section></section>
 <section class="panel"><div class="panel-head"><div><h2>State Explorer</h2><p id="rows">Loading records…</p></div><input id="search" class="search" type="search" placeholder="Search State / UT…"></div>
 <div class="table-wrap"><table><thead><tr><th>State / UT</th><th>Received</th><th>Disposed</th><th>Pending</th><th>Disposal rate</th><th>181+ days</th></tr></thead><tbody id="table"></tbody></table></div></section>
 <section class="panel"><div class="panel-head"><div><h2>Pending Ageing</h2><p>Current pending workload by ageing bucket.</p></div></div><div id="ageing" class="age-grid"></div></section>
