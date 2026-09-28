@@ -50,6 +50,10 @@ Returns the verified snapshot registry plus the latest comparison. If fewer than
 
 Compares two registered snapshots. The response includes aggregate deltas, percentage changes where calculable, State/UT coverage differences and per-State/UT changes.
 
+`GET /api/v1/history/state/{state_ut}`
+
+Returns the verified timeline for one State/UT. Values are direct snapshot records; no interpolation is performed.
+
 Historical changes are descriptive differences, not causal findings or performance rankings.
 
 ## Controlled snapshot ingestion
