@@ -61,3 +61,23 @@ Example State,2026-09-25,01/01/2026-25/09/2026,100,120,10,5,3,2,20,https://examp
     result = ingest_csv_bytes(csv.encode("utf-8"))
     assert result["validation"]["status"] == "passed"
     assert result["validation"]["record_count"] == 1
+def test_duplicate_snapshot_registration_is_idempotent():
+    from backend.app.snapshot import register_dataframe
+    row = {
+        "state_ut": "Concurrency Test State",
+        "snapshot_date": "2098-01-01",
+        "reporting_period": "01/01/2098-01/01/2098",
+        "received": 10,
+        "disposed": 12,
+        "pending_0_60": 1,
+        "pending_61_180": 1,
+        "pending_181_365": 1,
+        "pending_over_365": 1,
+        "pending_total": 4,
+        "source": "https://example.gov.in/data",
+    }
+    df = pd.DataFrame([row])
+    first = register_dataframe(df)
+    second = register_dataframe(df)
+    assert first["status"] in {"registered", "already_registered"}
+    assert second["status"] == "already_registered"
