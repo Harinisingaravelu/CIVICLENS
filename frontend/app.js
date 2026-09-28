@@ -27,7 +27,10 @@ async function loadStateHistory(){
   if(!timeline)return;
   if(d.status!=="ok"){timeline.innerHTML='<p class="history-empty">'+esc(d.reason)+'</p>';return}
   timeline.innerHTML='<div class="state-timeline">'+d.timeline.map(x=>'<div class="timeline-item"><span>'+esc(x.snapshot_date)+'</span><b>Pending '+fmt(x.pending_total)+'</b><small>Received '+fmt(x.received)+' • Disposed '+fmt(x.disposed)+'</small></div>').join("")+'</div><p class="history-note">'+esc(d.note)+'</p>';
- }catch{detail.innerHTML='<p class="history-empty">State history is unavailable.</p>'}
+ }catch{
+  const timeline=document.querySelector("#stateTimeline");
+  if(timeline) timeline.innerHTML='<p class="history-empty">State history is unavailable.</p>';
+ }
 }
 async function loadHistory(){
  try{
