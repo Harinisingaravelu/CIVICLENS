@@ -64,7 +64,7 @@ def overview():
 def state_table(search=None, limit=100):
     df = load_data()
     if search:
-        df = df[df.state_ut.str.contains(search.strip(), case=False, na=False)]
+        df = df[df.state_ut.str.contains(search.strip(), case=False, na=False, regex=False)]
     cols = ["state_ut", "received", "disposed", "pending_total", "disposal_rate", "pending_share", "ageing_181_plus", "pressure_index"]
     return df[cols].sort_values("pending_total", ascending=False).head(limit).to_dict(orient="records")
 
