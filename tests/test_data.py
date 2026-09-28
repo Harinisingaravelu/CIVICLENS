@@ -3,8 +3,7 @@ import pandas as pd
 
 DATA = Path(__file__).parents[1] / "data" / "cpgrams_snapshot.csv"
 
-def test_dataset_exists():
-    assert DATA.exists()
+def test_dataset_exists(): assert DATA.exists()
 
 def test_dataset_has_expected_columns_and_rows():
     df = pd.read_csv(DATA)
@@ -27,12 +26,11 @@ def test_disposed_does_not_exceed_received():
     df = pd.read_csv(DATA)
     assert (df["disposed"] <= df["received"]).all()
 
-def test_source_is_present():
+def test_source_is_present_and_https():
     df = pd.read_csv(DATA)
     assert df["source"].notna().all()
     assert df["source"].str.startswith("https://").all()
 
-
-def test_source_urls_are_https():
+def test_state_names_are_unique():
     df = pd.read_csv(DATA)
-    assert df["source"].str.startswith("https://").all()
+    assert df["state_ut"].is_unique
