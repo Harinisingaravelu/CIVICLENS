@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 import hashlib
+import sqlite3
 from .analytics import load_data, validate_dataframe
 from .database import connect, init_db
 
@@ -29,9 +30,7 @@ def register_dataframe(df) -> dict:
                 "INSERT INTO snapshots(snapshot_date,reporting_period,source_url,retrieved_at,record_count,dataset_sha256) VALUES(?,?,?,?,?,?)",
                 (snapshot_date, reporting_period, source_url, retrieved_at, len(df), digest),
             )
-        except Exception as exc:
-            if "UNIQUE constraint failed" not in str(exc):
-                raise
+        except sqlite3.IntegrityError:
             existing = conn.execute("SELECT id FROM snapshots WHERE dataset_sha256=?", (digest,)).fetchone()
             if existing:
                 return {"status":"already_registered","snapshot_id":existing[0],"dataset_sha256":digest}
