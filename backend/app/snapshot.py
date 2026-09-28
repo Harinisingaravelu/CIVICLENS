@@ -1,0 +1,22 @@
+from datetime import datetime, timezone
+import hashlib
+from .analytics import load_data
+from .database import connect, init_db
+
+def register_current_snapshot() -> dict:
+    df = load_data()
+    init_db()
+    csv_text = df[["state_ut","snapshot_date","reporting_period","received","disposed","pending_0_60","pending_61_180","pending_181_365","pending_over_365","pending_total","source"]].to_csv(index=False)
+    digest = hashlib.sha256(csv_text.encode("utf-8")).hexdigest()
+    snapshot_date = str(df["snapshot_date"].iloc[0])
+    reporting_period = str(df["reporting_period"].iloc[0])
+    source_url = str(df["source"].iloc[0])
+    retrieved_at = datetime.now(timezone.utc).isoformat()
+    with connect() as conn:
+        existing = conn.execute("SELECT id FROM snapshots WHERE dataset_sha256=?", (digest,)).fetchone()
+        if existing: return {"status":"already_registered","snapshot_id":existing[0],"dataset_sha256":digest}
+        cur = conn.execute("INSERT INTO snapshots(snapshot_date,reporting_period,source_url,retrieved_at,record_count,dataset_sha256) VALUES(?,?,?,?,?,?)", (snapshot_date,reporting_period,source_url,retrieved_at,len(df),digest))
+        snapshot_id = cur.lastrowid
+        state_cols=["state_ut","received","disposed","pending_0_60","pending_61_180","pending_181_365","pending_over_365","pending_total"]
+        conn.executemany("INSERT INTO snapshot_states(snapshot_id,state_ut,received,disposed,pending_0_60,pending_61_180,pending_181_365,pending_over_365,pending_total) VALUES(?,?,?,?,?,?,?,?,?)", [(snapshot_id,*row) for row in df[state_cols].itertuples(index=False,name=None)])
+        return {"status":"registered","snapshot_id":snapshot_id,"dataset_sha256":digest,"record_count":len(df)}
