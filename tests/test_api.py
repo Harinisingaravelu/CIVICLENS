@@ -132,3 +132,11 @@ def test_metrics_normalize_dynamic_state_history_path(client):
     r=client.get("/metrics")
     assert r.status_code==200
     assert "GET /api/v1/history/state/{state_ut}" in r.json()["routes"]
+def test_ingestion_unexpected_error_is_sanitized(client, monkeypatch):
+    monkeypatch.setenv("ENABLE_SNAPSHOT_INGESTION", "true")
+    from backend.app import main
+    monkeypatch.setattr(main, "ingest_csv_bytes", lambda content: (_ for _ in ()).throw(RuntimeError("secret internal detail")))
+    r=client.post("/api/v1/snapshots/ingest",files={"file":("snapshot.csv",b"state_ut", "text/csv")})
+    assert r.status_code==500
+    assert r.json()["detail"]=="Snapshot ingestion failed unexpectedly. Check server logs for details."
+    assert "secret internal detail" not in r.text
