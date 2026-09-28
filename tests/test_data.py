@@ -31,3 +31,8 @@ def test_source_is_present():
     df = pd.read_csv(DATA)
     assert df["source"].notna().all()
     assert df["source"].str.startswith("https://").all()
+
+
+def test_source_urls_are_https():
+    df = pd.read_csv(DATA)
+    assert df["source"].str.startswith("https://").all()
