@@ -150,3 +150,16 @@ def test_state_search_treats_special_characters_as_literal(client):
     r = client.get("/api/v1/states", params={"search": "["})
     assert r.status_code == 200
     assert r.json() == []
+
+
+def test_data_quality(client):
+    r=client.get("/api/v1/data-quality")
+    assert r.status_code==200
+    body=r.json()
+    assert body["status"]=="passed"
+    assert body["rows"]==37
+    assert body["duplicate_states_ut"]==0
+    assert body["missing_numeric_values"]==0
+    assert body["negative_numeric_values"]==0
+    assert body["ageing_reconciliation_errors"]==0
+    assert body["source_is_https"] is True
