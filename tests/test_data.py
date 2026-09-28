@@ -53,3 +53,11 @@ def test_source_is_present_and_https():
 def test_state_names_are_unique():
     df = pd.read_csv(DATA)
     assert df["state_ut"].is_unique
+def test_ingestion_returns_validation_audit_summary():
+    from backend.app.ingestion import ingest_csv_bytes
+    csv = """state_ut,snapshot_date,reporting_period,received,disposed,pending_0_60,pending_61_180,pending_181_365,pending_over_365,pending_total,source
+Example State,2026-09-25,01/01/2026-25/09/2026,100,120,10,5,3,2,20,https://example.gov.in/data
+"""
+    result = ingest_csv_bytes(csv.encode("utf-8"))
+    assert result["validation"]["status"] == "passed"
+    assert result["validation"]["record_count"] == 1
