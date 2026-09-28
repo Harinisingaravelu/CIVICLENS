@@ -49,3 +49,12 @@ Downloads the validated dataset used by the application.
 
 ## Interpretation
 CIVICLENS calculations are independent analytics. The exploratory `pressure_index` is not an official government metric.
+
+## Snapshots
+`GET /api/v1/snapshots`
+
+Lists registered verified snapshots and their provenance metadata, including SHA-256 dataset fingerprint.
+
+`POST /api/v1/snapshots/register`
+
+Registers the current validated CSV snapshot in the local SQLite registry. Registration is idempotent for the same dataset fingerprint.
