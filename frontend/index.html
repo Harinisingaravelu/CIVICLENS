@@ -80,7 +80,7 @@
     <section id="states" class="section">
       <div class="section-head">
         <div><p class="eyebrow">STATE / UT ANALYTICS</p><h2>State Explorer</h2><p>Current verified grievance workload by State/UT.</p></div>
-        <input id="search" class="search" type="search" placeholder="Search State / UT…" aria-label="Search State or Union Territory">
+        <div class="search-stack"><input id="search" class="search" type="search" placeholder="Search State / UT…" aria-label="Search State or Union Territory"><div id="stateSearchHint" class="search-hint" aria-live="polite"></div></div>
       </div>
       <article class="panel table-panel">
         <div class="table-meta"><span id="rows">Loading records…</span><button id="exportBtn" class="small-btn" type="button">Export state CSV</button></div>
@@ -91,7 +91,7 @@
     <section id="districts" class="section">
       <div class="section-head">
         <div><p class="eyebrow">DISTRICT INTELLIGENCE</p><h2>District Directory & Drill-down</h2><p>District structure is sourced from the Government of India LGD. CPGRAMS district grievance metrics are shown only when a verified district snapshot is available.</p></div>
-        <input id="districtSearch" class="search" type="search" placeholder="Search State / UT…" aria-label="Search district directory">
+        <input id="districtSearch" class="search" type="search" placeholder="Search State / UT…" aria-label="Search district directory by State or Union Territory">
       </div>
       <article class="panel">
         <div class="district-toolbar">
