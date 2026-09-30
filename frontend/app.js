@@ -23,7 +23,7 @@ function showDistrictSearchHint(query){
   if(district){
     hint.innerHTML="<strong>"+esc(district)+"</strong> is a district, not a State/UT. Open District Directory below to continue.";
     hint.classList.add("visible");
-    document.querySelector("#districtSearch").value=district;
+    document.querySelector("#districtState").value="Tamil Nadu";
     document.querySelector("#districts")?.scrollIntoView({behavior:"smooth",block:"start"});
     renderDistrictDirectory(districtRows);
     return;
