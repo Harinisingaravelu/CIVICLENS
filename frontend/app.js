@@ -7,11 +7,35 @@ const fmt=n=>Number(n??0).toLocaleString("en-IN");
 const pct=n=>Number(n??0).toFixed(2);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
 let districtRows=[]; let stateRows=[];
+
+const TN_DISTRICTS=["Ariyalur","Chengalpattu","Chennai","Coimbatore","Cuddalore","Dharmapuri","Dindigul","Erode","Kallakurichi","Kancheepuram","Kanniyakumari","Karur","Krishnagiri","Madurai","Mayiladuthurai","Nagapattinam","Namakkal","Perambalur","Pudukkottai","Ramanathapuram","Ranipet","Salem","Sivaganga","Tenkasi","Thanjavur","Theni","The Nilgiris","Thoothukudi","Tiruchirappalli","Tirunelveli","Tirupathur","Tiruppur","Tiruvallur","Tiruvannamalai","Tiruvarur","Vellore","Viluppuram","Virudhunagar"];
+
+function findKnownDistrict(query){
+  const q=query.trim().toLowerCase();
+  if(!q)return null;
+  return TN_DISTRICTS.find(d=>d.toLowerCase()===q)||TN_DISTRICTS.find(d=>d.toLowerCase().includes(q));
+}
+
+function showDistrictSearchHint(query){
+  const district=findKnownDistrict(query);
+  const hint=document.querySelector("#stateSearchHint");
+  if(!hint)return;
+  if(district){
+    hint.innerHTML="<strong>"+esc(district)+"</strong> is a district, not a State/UT. Open District Directory below to continue.";
+    hint.classList.add("visible");
+    document.querySelector("#districtSearch").value=district;
+    document.querySelector("#districts")?.scrollIntoView({behavior:"smooth",block:"start"});
+    renderDistrictDirectory(districtRows);
+    return;
+  }
+  hint.textContent="";
+  hint.classList.remove("visible");
+}
 async function get(path){const r=await fetch(API+path);if(!r.ok)throw new Error(await r.text());return r.json();}
 function setApiStatus(ok){const el=document.querySelector("#apiStatus");if(!el)return;el.className="status-pill"+(ok?" ok":"");el.innerHTML="<i></i> "+(ok?"API connected":"API unavailable");}
 function renderKpis(o){const items=[["Received",fmt(o.received),"Verified receipts"],["Disposed",fmt(o.disposed),"Recorded disposals"],["Pending",fmt(o.pending),"Current workload"],["Disposal rate",pct(o.disposal_rate)+"%","Disposed ÷ received"],["181+ days",fmt(o.ageing_181_plus),"Ageing 181+ days"]];document.querySelector("#kpis").innerHTML=items.map(x=>"<div class=\"kpi\"><small>"+x[0]+"</small><strong>"+x[1]+"</strong><span>"+x[2]+"</span></div>").join("");document.querySelector("#snapshot").textContent="Snapshot "+o.snapshot_date+" · Reporting period "+o.reporting_period;}
 function renderComposition(o){const received=Math.max(Number(o.received||0),1),disposed=Math.max(Number(o.disposed||0),0),pending=Math.max(Number(o.pending||0),0);const disposalAngle=Math.min(360,disposed/received*360),pendingAngle=Math.min(360,pending/Math.max(received+pending,1)*360);document.querySelector("#donut").style.background="conic-gradient(var(--teal) 0deg "+pendingAngle+"deg,#8b9bb4 "+pendingAngle+"deg "+Math.min(360,pendingAngle+disposalAngle/2)+"deg,#d97706 "+Math.min(360,pendingAngle+disposalAngle/2)+"deg 360deg)";document.querySelector("#donutValue").textContent=pct(o.pending_share)+"%";document.querySelector("#compositionLegend").innerHTML=[["Pending",pending,"Current workload"],["Disposed",disposed,"Recorded disposals"],["Received",received,"Base volume"]].map(x=>"<div class=\"legend-row\"><i></i><span>"+x[0]+" · "+x[2]+"</span><b>"+fmt(x[1])+"</b></div>").join("");}
-function mergeDistrictCounts(rows,directory){const map=new Map(directory.map(r=>[String(r.state_ut).toLowerCase(),r.district_count]));return rows.map(r=>{const exact=map.get(String(r.state_ut).toLowerCase());if(exact!==undefined)return {...r,district_count:exact};const normalized=String(r.state_ut).replace(/^Union Territory of /i,"").toLowerCase();const hit=rows.find(x=>String(x.state_ut).toLowerCase().includes(normalized)||normalized.includes(String(x.state_ut).toLowerCase()));return {...r,district_count:hit?.district_count??null};});}
+function mergeDistrictCounts(rows,directory){const map=new Map(directory.map(r=>[String(r.state_ut).toLowerCase(),r.district_count]));return rows.map(r=>{const exact=map.get(String(r.state_ut).toLowerCase());if(exact!==undefined)return {...r,district_count:exact};const normalized=String(r.state_ut).replace(/^Union Territory of /i,"").toLowerCase();const hit=directory.find(x=>String(x.state_ut).toLowerCase().includes(normalized)||normalized.includes(String(x.state_ut).toLowerCase()));return {...r,district_count:hit?.district_count??null};});}
 function renderStates(rows){stateRows=rows;document.querySelector("#rows").textContent=rows.length+" matching State / UT records";document.querySelector("#table").innerHTML=rows.length?rows.map(r=>"<tr><td><strong>"+esc(r.state_ut)+"</strong></td><td>"+fmt(r.received)+"</td><td>"+fmt(r.disposed)+"</td><td>"+fmt(r.pending_total)+"</td><td>"+pct(r.disposal_rate)+"%</td><td>"+fmt(r.ageing_181_plus)+"</td><td>"+(r.district_count??"—")+"</td></tr>").join(""):"<tr><td colspan=\"7\" class=\"empty\">No State / UT records match the search.</td></tr>";}
 function renderSnapshots(snaps){const box=document.querySelector("#snapshots");box.innerHTML=snaps.length?snaps.slice(0,5).map(s=>"<div class=\"snapshot-item\"><strong>"+esc(s.snapshot_date)+"</strong><span>"+esc(s.reporting_period)+"</span><small>"+fmt(s.record_count)+" State / UT records · verified registry</small></div>").join(""):"<div class=\"empty\">No registered snapshots.</div>";}
 function renderAgeing(a){const items=[["0–60 days",a["0_60"]],["61–180 days",a["61_180"]],["181–365 days",a["181_365"]],["365+ days",a["365_plus"]]];const total=items.reduce((s,x)=>s+Number(x[1]||0),0);document.querySelector("#ageCards").innerHTML=items.map(x=>"<div class=\"age-card\"><span>"+x[0]+"</span><strong>"+fmt(x[1])+"</strong><em>"+(total?((x[1]/total)*100).toFixed(1):"0.0")+"% of pending</em></div>").join("");const max=Math.max(...items.map(x=>Number(x[1]||0)),1);document.querySelector("#ageChart").innerHTML=items.map(x=>"<div class=\"bar-row\"><span>"+x[0]+"</span><div class=\"bar-track\"><i style=\"width:"+Math.max(2,Number(x[1]||0)/max*100)+"%\"></i></div><b>"+fmt(x[1])+"</b></div>").join("");}
@@ -34,5 +58,5 @@ document.querySelector("#districtState")?.addEventListener("change",renderDistri
 document.querySelector("#districtSearch")?.addEventListener("input",()=>renderDistrictDirectory(districtRows));
 document.querySelector("#ask")?.addEventListener("click",askAI);
 document.querySelector("#question")?.addEventListener("keydown",e=>{if(e.key==="Enter")askAI();});
-let searchTimer;document.querySelector("#search")?.addEventListener("input",e=>{clearTimeout(searchTimer);searchTimer=setTimeout(()=>loadDashboard(e.target.value).catch(()=>{setApiStatus(false);document.querySelector("#rows").textContent="State data unavailable.";document.querySelector("#table").innerHTML="";}),250);});
+let searchTimer;document.querySelector("#search")?.addEventListener("input",e=>{const query=e.target.value;showDistrictSearchHint(query);clearTimeout(searchTimer);searchTimer=setTimeout(()=>loadDashboard(query).catch(()=>{setApiStatus(false);document.querySelector("#rows").textContent="State data unavailable.";document.querySelector("#table").innerHTML="";}),250);});
 (async()=>{try{await loadDashboard();await loadSuggestions();await loadHistory();renderQuality(await get("/api/v1/data-quality"));}catch(err){console.error(err);setApiStatus(false);document.querySelector("#rows").textContent="Dashboard data is temporarily unavailable.";document.querySelector("#districtCoverageNote").textContent="API unavailable. Start the CIVICLENS backend or check the deployed API.";document.querySelector("#quality").innerHTML="<div class=\"empty error\">Data quality endpoint unavailable.</div>";}})();
