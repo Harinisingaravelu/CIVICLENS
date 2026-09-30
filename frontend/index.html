@@ -1,16 +1,155 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="CIVICLENS — evidence-led public grievance workload analytics">
-<title>CIVICLENS — Public Grievance Intelligence</title><link rel="stylesheet" href="style.css"></head>
-<body><header><div class="brand">CIVIC<span>LENS</span></div><div class="status"><i></i> Evidence-led analytics</div></header>
-<main><section class="hero"><p class="eyebrow">PUBLIC GRIEVANCE INTELLIGENCE</p><h1>See the workload.<br><span>Understand the signal.</span></h1><p>Explore grievance receipts, disposal, pending workload and ageing from transparent government-data snapshots.</p><div class="meta"><span id="snapshot">Loading verified snapshot…</span><span id="source"></span></div></section>
-<section id="kpis" class="grid"></section>
-<section class="visual-grid"><section class="panel chart-panel"><div class="panel-head"><div><h2>Pending Ageing Distribution</h2><p>How the current pending workload is distributed by age.</p></div></div><div id="ageChart" class="bar-chart"></div></section><section class="panel"><div class="panel-head"><div><h2>Snapshot Registry</h2><p>Verified datasets available to the application.</p></div></div><div id="snapshots" class="snapshot-list">Loading…</div></section></section>
-<section class="panel history-panel"><div class="panel-head"><div><p class="eyebrow">HISTORICAL INTELLIGENCE</p><h2>Verified snapshot comparison</h2><p>Changes are shown only when two verified snapshots exist. No historical values are fabricated.</p></div></div><div id="historyStatus" class="history-status">Checking snapshot history…</div><div id="historyComparison" class="history-comparison"></div><div id="historyDetail" class="history-detail"></div></section>
-<section class="panel"><div class="panel-head"><div><p class="eyebrow">DATA QUALITY</p><h2>Dataset Validation</h2><p>Automated checks applied before analytics are shown.</p></div></div><div id="quality" class="quality-grid">Checking data quality…</div></section>
-<section class="panel"><div class="panel-head"><div><h2>State Explorer</h2><p id="rows">Loading records…</p></div><label class="sr-only" for="search">Search State or Union Territory</label><input id="search" class="search" type="search" placeholder="Search State / UT…" aria-describedby="rows"></div>
-<div class="table-wrap"><table><caption class="sr-only">State and Union Territory grievance workload metrics</caption><thead><tr><th>State / UT</th><th>Received</th><th>Disposed</th><th>Pending</th><th>Disposal rate</th><th>181+ days</th></tr></thead><tbody id="table"></tbody></table></div></section>
-<section class="panel"><div class="panel-head"><div><h2>Pending Ageing</h2><p>Current pending workload by ageing bucket.</p></div></div><div id="ageing" class="age-grid"></div></section>
-<section class="panel"><div class="panel-head"><div><h2>Descriptive Signals</h2><p>Snapshot observations only — not performance rankings or causal findings.</p></div></div><ul id="insights" class="insights"><li>Loading…</li></ul></section>
-<section class="panel copilot"><p class="eyebrow">GEMINI ANALYTICS COPILOT</p><h2>Ask the data</h2><p>Answers are grounded in the CIVICLENS dataset and include snapshot context.</p><div id="suggestions" class="suggestions"></div><div class="ask"><label class="sr-only" for="question">Ask CIVICLENS about the dataset</label><input id="question" maxlength="500" placeholder="Example: What is the pending workload in Tamil Nadu?" aria-describedby="evidence"><button id="ask" type="button">Analyse</button></div><pre id="answer">Ask a question to begin.</pre><small id="evidence" class="evidence"></small></section></main>
-<script src="app.js"></script></body></html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="CIVICLENS — evidence-led public grievance intelligence and geographic analytics">
+<title>CIVICLENS — Public Grievance Intelligence</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="brand"><div class="brand-mark">C</div><div><strong>CIVIC<span>LENS</span></strong><small>Grievance Intelligence</small></div></div>
+    <nav class="nav" aria-label="Primary navigation">
+      <a href="#overview" class="nav-link active">Overview</a>
+      <a href="#geography" class="nav-link">Geographic Intelligence</a>
+      <a href="#states" class="nav-link">State Explorer</a>
+      <a href="#districts" class="nav-link">District Directory</a>
+      <a href="#ageing" class="nav-link">Ageing Analysis</a>
+      <a href="#history" class="nav-link">History</a>
+      <a href="#quality" class="nav-link">Data Quality</a>
+      <a href="#copilot" class="nav-link">AI Copilot</a>
+      <a href="#methodology" class="nav-link">Methodology</a>
+    </nav>
+    <div class="sidebar-foot">
+      <div class="live-dot"><i></i> Verified analytics</div>
+      <a href="https://pgportal.gov.in/darpgdashboard" target="_blank" rel="noopener">Official CPGRAMS source ↗</a>
+    </div>
+  </aside>
+
+  <main class="content">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">PUBLIC GRIEVANCE INTELLIGENCE</p>
+        <h1>Evidence first. <span>Insight second.</span></h1>
+      </div>
+      <div class="top-actions">
+        <span id="apiStatus" class="status-pill"><i></i> API checking</span>
+        <button id="refreshBtn" class="ghost-btn" type="button">Refresh data</button>
+      </div>
+    </header>
+
+    <section id="overview" class="section">
+      <div class="section-head">
+        <div><h2>National overview</h2><p id="snapshot">Loading verified snapshot…</p></div>
+        <div class="source-badge">CPGRAMS / DARPG</div>
+      </div>
+      <div id="kpis" class="kpi-grid"></div>
+      <div class="overview-grid">
+        <article class="panel visual-panel">
+          <div class="panel-head"><div><h3>Workload composition</h3><p>Received, disposed and current pending workload.</p></div></div>
+          <div class="composition">
+            <div id="donut" class="donut"><div><strong id="donutValue">—</strong><span>pending share</span></div></div>
+            <div id="compositionLegend" class="legend"></div>
+          </div>
+        </article>
+        <article class="panel">
+          <div class="panel-head"><div><h3>Verified snapshot registry</h3><p>Datasets registered by CIVICLENS.</p></div></div>
+          <div id="snapshots" class="snapshot-list">Loading…</div>
+        </article>
+      </div>
+    </section>
+
+    <section id="geography" class="section">
+      <div class="section-head"><div><p class="eyebrow">GEOGRAPHIC INTELLIGENCE</p><h2>India → State/UT → District</h2><p>Explore the administrative hierarchy without inventing unavailable grievance metrics.</p></div></div>
+      <div class="geo-grid">
+        <article class="panel geo-summary">
+          <div class="geo-icon">◎</div>
+          <div><span>State / UT records</span><strong id="geoStates">—</strong></div>
+          <div><span>Administrative districts</span><strong id="geoDistricts">—</strong></div>
+          <div><span>District metric coverage</span><strong id="geoCoverage">Checking…</strong></div>
+        </article>
+        <article class="panel">
+          <div class="panel-head"><div><h3>District coverage</h3><p id="districtCoverageNote">Checking official directory and metric coverage.</p></div></div>
+          <div id="districtBars" class="bar-chart"></div>
+        </article>
+      </div>
+    </section>
+
+    <section id="states" class="section">
+      <div class="section-head">
+        <div><p class="eyebrow">STATE / UT ANALYTICS</p><h2>State Explorer</h2><p>Current verified grievance workload by State/UT.</p></div>
+        <input id="search" class="search" type="search" placeholder="Search State / UT…" aria-label="Search State or Union Territory">
+      </div>
+      <article class="panel table-panel">
+        <div class="table-meta"><span id="rows">Loading records…</span><button id="exportBtn" class="small-btn" type="button">Export state CSV</button></div>
+        <div class="table-wrap"><table><thead><tr><th>State / UT</th><th>Received</th><th>Disposed</th><th>Pending</th><th>Disposal rate</th><th>181+ days</th><th>Districts</th></tr></thead><tbody id="table"></tbody></table></div>
+      </article>
+    </section>
+
+    <section id="districts" class="section">
+      <div class="section-head">
+        <div><p class="eyebrow">DISTRICT INTELLIGENCE</p><h2>District Directory & Drill-down</h2><p>District structure is sourced from the Government of India LGD. CPGRAMS district grievance metrics are shown only when a verified district snapshot is available.</p></div>
+        <input id="districtSearch" class="search" type="search" placeholder="Search State / UT…" aria-label="Search district directory">
+      </div>
+      <article class="panel">
+        <div class="district-toolbar">
+          <div class="select-wrap"><label for="districtState">Select State / UT</label><select id="districtState"></select></div>
+          <button id="districtOpen" class="primary-btn" type="button">Open district intelligence</button>
+          <button id="districtExport" class="small-btn" type="button">Export directory</button>
+        </div>
+        <div id="districtDetail" class="district-detail"></div>
+      </article>
+      <article class="panel">
+        <div class="panel-head"><div><h3>Administrative district coverage</h3><p>Counts are from the Local Government Directory snapshot; they are not grievance counts.</p></div></div>
+        <div class="table-wrap"><table><thead><tr><th>State / UT</th><th>District count</th><th>Grievance metrics</th><th>Directory date</th></tr></thead><tbody id="districtTable"></tbody></table></div>
+      </article>
+    </section>
+
+    <section id="ageing" class="section">
+      <div class="section-head"><div><p class="eyebrow">PENDING AGEING</p><h2>Ageing intelligence</h2><p>How the verified pending workload is distributed by age bucket.</p></div></div>
+      <div id="ageCards" class="age-grid"></div>
+      <article class="panel chart-panel"><div class="panel-head"><div><h3>Ageing distribution</h3><p>Absolute pending workload by bucket.</p></div></div><div id="ageChart" class="bar-chart large"></div></article>
+    </section>
+
+    <section id="history" class="section">
+      <div class="section-head"><div><p class="eyebrow">HISTORICAL INTELLIGENCE</p><h2>Verified snapshot comparison</h2><p>No interpolation. No invented history. Changes appear only between registered snapshots.</p></div></div>
+      <article class="panel">
+        <div id="historyStatus" class="notice">Checking snapshot history…</div>
+        <div id="historyComparison" class="comparison-grid"></div>
+        <div id="historyDetail"></div>
+      </article>
+    </section>
+
+    <section id="quality" class="section">
+      <div class="section-head"><div><p class="eyebrow">DATA QUALITY</p><h2>Validation control room</h2><p>Checks applied before data is exposed to analytics.</p></div></div>
+      <article class="panel"><div id="quality" class="quality-grid">Checking data quality…</div></article>
+    </section>
+
+    <section id="copilot" class="section">
+      <div class="section-head"><div><p class="eyebrow">GEMINI ANALYTICS COPILOT</p><h2>Ask the data</h2><p>Deterministic analytics are used first; Gemini explains only the verified CIVICLENS context.</p></div></div>
+      <article class="panel copilot">
+        <div id="suggestions" class="suggestions"></div>
+        <div class="ask"><label class="sr-only" for="question">Ask CIVICLENS</label><input id="question" maxlength="500" placeholder="Example: How many grievances are pending in Tamil Nadu?"><button id="ask" class="primary-btn" type="button">Analyse</button></div>
+        <div id="answer" class="answer">Ask a question to begin.</div>
+        <div id="evidence" class="evidence">Evidence will appear here.</div>
+      </article>
+    </section>
+
+    <section id="methodology" class="section">
+      <div class="section-head"><div><p class="eyebrow">METHODOLOGY</p><h2>What CIVICLENS does — and does not do</h2></div></div>
+      <article class="panel methodology">
+        <div><h3>Verified data path</h3><p>Official source → controlled ingestion → schema validation → snapshot registry → analytics API → visual layer → grounded AI explanation.</p></div>
+        <div><h3>District rule</h3><p>Administrative district counts come from the Government of India Local Government Directory. District grievance metrics are never derived by splitting State/UT totals.</p></div>
+        <div><h3>Interpretation rule</h3><p>CIVICLENS reports descriptive workload patterns. Project-defined metrics such as pressure index are exploratory and are not official government scores.</p></div>
+        <div><h3>Data source</h3><p><a href="https://pgportal.gov.in/darpgdashboard" target="_blank" rel="noopener">Official CPGRAMS dashboard ↗</a> · <a href="https://data.gov.in/catalog/local-government-directory-lgd" target="_blank" rel="noopener">Official LGD catalog ↗</a></p></div>
+      </article>
+    </section>
+
+    <footer>© CIVICLENS · Evidence-led public grievance analytics · Built for transparent, reproducible analysis.</footer>
+  </main>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
