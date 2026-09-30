@@ -192,12 +192,15 @@ def _parse_igod_districts(markup: str, expected: int | None = None) -> list[str]
     names: list[str] = []
 
     for sub_link in tree.xpath("//a[normalize-space()='Sub Districts']"):
-        previous = sub_link.xpath("./preceding-sibling::*[1]")
-        if previous:
-            name = " ".join(previous[0].itertext())
+        # IGOD represents some districts as anchors and others as plain text.
+        # Prefer a meaningful text node immediately before the Sub Districts link;
+        # otherwise fall back to the previous element (the district anchor).
+        previous_text = sub_link.xpath("./preceding-sibling::text()[normalize-space()][1]")
+        if previous_text:
+            name = previous_text[0]
         else:
-            previous_text = sub_link.xpath("./preceding-sibling::text()[normalize-space()][1]")
-            name = previous_text[0] if previous_text else ""
+            previous = sub_link.xpath("./preceding-sibling::*[1]")
+            name = " ".join(previous[0].itertext()) if previous else ""
 
         name = _clean_district_name(name)
         if name and name.lower() not in {"blocks", "sub districts"}:
