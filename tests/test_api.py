@@ -176,3 +176,37 @@ def test_ai_falls_back_to_deterministic_answer_when_gemini_fails(client, monkeyp
     assert body["answer_data"]["state_ut"]=="Tamil Nadu"
     assert body["grounding"]=="deterministic_dataset_fallback"
     assert "6,262" in body["answer"]
+
+
+def test_district_coverage(client):
+    r=client.get("/api/v1/districts/coverage")
+    assert r.status_code==200
+    body=r.json()
+    assert body["directory_available"] is True
+    assert body["total_districts"]==784
+    assert body["states_ut_with_directory"]==36
+
+def test_district_directory(client):
+    r=client.get("/api/v1/districts",params={"search":"Tamil Nadu"})
+    assert r.status_code==200
+    body=r.json()
+    assert len(body)==1
+    assert body[0]["state_ut"]=="Tamil Nadu"
+    assert body[0]["district_count"]==38
+
+def test_district_state_detail(client):
+    r=client.get("/api/v1/districts/Tamil%20Nadu")
+    assert r.status_code==200
+    body=r.json()
+    assert body["status"]=="ok"
+    assert body["district_count"]==38
+    assert body["metrics_available"] is False
+
+def test_unknown_district_state_returns_not_found(client):
+    r=client.get("/api/v1/districts/Definitely%20Not%20A%20State")
+    assert r.status_code==404
+
+def test_district_directory_export(client):
+    r=client.get("/api/v1/export/district-directory")
+    assert r.status_code==200
+    assert "district_count" in r.text
