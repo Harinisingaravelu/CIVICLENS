@@ -99,3 +99,25 @@ CIVICLENS now includes a State/UT → District information architecture.
 - A verified district CPGRAMS snapshot can later activate district received/disposed/pending, ageing, history, comparison, export and grounded AI features through the documented district data contract.
 
 The public CPGRAMS dashboard currently exposes department and State/UT tables, while DARPG/IIT Kanpur materials document district-wise analysis in analytical dashboards. CIVICLENS keeps the public-data layer and the district-directory layer separate so every displayed metric remains traceable.
+
+
+## UX and geographic information architecture
+
+The dashboard follows a deliberate government-analytics workflow:
+
+1. **National overview** — establish the verified snapshot before interpretation.
+2. **Geographic Explorer** — India → State/UT → District, with State/UT selection separated from district search.
+3. **State/UT Analytics** — compare current CPGRAMS workload in a sortable, scan-friendly table.
+4. **Pending Ageing** — inspect workload age buckets.
+5. **History** — compare only registered snapshots.
+6. **Data Quality** — expose validation checks before users trust the numbers.
+7. **AI Copilot** — deterministic dataset calculations first, grounded Gemini explanation second.
+8. **Methodology** — show source boundaries and what CIVICLENS deliberately does not infer.
+
+The district explorer resolves district names from the Government of India Integrated Government Online Directory (IGOD) on demand and caches them for six hours. This avoids maintaining a hand-written 38-district Tamil Nadu list or inventing district grievance numbers. District metrics remain disabled until a verified district-level CPGRAMS snapshot is available.
+
+New district endpoint:
+- `GET /api/v1/districts/{state_ut}/items`
+- optional `search` query filters district names within the selected State/UT.
+
+The UI intentionally keeps the **State/UT search** and **district search** as separate controls so a district such as Chennai is not treated as a State/UT.
