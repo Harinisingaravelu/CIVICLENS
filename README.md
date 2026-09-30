@@ -86,3 +86,16 @@ docker compose up --build
 
 ### CPGRAMS disposal caveat
 The official dashboard notes that disposals can include grievances carried forward from earlier periods. Therefore CIVICLENS does not reject a record merely because disposed exceeds current-period received; it validates non-negative values and the pending-ageing reconciliation instead.
+
+
+## Geographic intelligence
+
+CIVICLENS now includes a State/UT → District information architecture.
+
+- State Explorer includes the current administrative district count.
+- District Directory is sourced from the Government of India Local Government Directory (LGD).
+- District coverage and directory export APIs are available.
+- District grievance metrics are **not fabricated** from State/UT aggregates.
+- A verified district CPGRAMS snapshot can later activate district received/disposed/pending, ageing, history, comparison, export and grounded AI features through the documented district data contract.
+
+The public CPGRAMS dashboard currently exposes department and State/UT tables, while DARPG/IIT Kanpur materials document district-wise analysis in analytical dashboards. CIVICLENS keeps the public-data layer and the district-directory layer separate so every displayed metric remains traceable.
