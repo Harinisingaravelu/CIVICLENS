@@ -10,111 +10,124 @@
 <body>
 <div class="app-shell">
   <aside class="sidebar">
-    <div class="brand"><div class="brand-mark">C</div><div><strong>CIVIC<span>LENS</span></strong><small>Grievance Intelligence</small></div></div>
+    <div class="brand">
+      <div class="brand-mark">C</div>
+      <div><strong>CIVIC<span>LENS</span></strong><small>Public Grievance Intelligence</small></div>
+    </div>
     <nav class="nav" aria-label="Primary navigation">
       <a href="#overview" class="nav-link active">Overview</a>
-      <a href="#geography" class="nav-link">Geographic Intelligence</a>
-      <a href="#states" class="nav-link">State Explorer</a>
-      <a href="#districts" class="nav-link">District Directory</a>
-      <a href="#ageing" class="nav-link">Ageing Analysis</a>
+      <a href="#geography" class="nav-link">Geographic Explorer</a>
+      <a href="#states" class="nav-link">State / UT Analytics</a>
+      <a href="#ageing" class="nav-link">Pending Ageing</a>
       <a href="#history" class="nav-link">History</a>
       <a href="#quality" class="nav-link">Data Quality</a>
       <a href="#copilot" class="nav-link">AI Copilot</a>
       <a href="#methodology" class="nav-link">Methodology</a>
     </nav>
     <div class="sidebar-foot">
-      <div class="live-dot"><i></i> Verified analytics</div>
-      <a href="https://pgportal.gov.in/darpgdashboard" target="_blank" rel="noopener">Official CPGRAMS source ↗</a>
+      <div class="live-dot"><i></i><span id="sidebarStatus">Checking API</span></div>
+      <a href="https://pgportal.gov.in/darpgdashboard" target="_blank" rel="noopener">Official CPGRAMS ↗</a>
+      <a href="https://igod.gov.in/districts" target="_blank" rel="noopener">Official District Directory ↗</a>
     </div>
   </aside>
 
   <main class="content">
     <header class="topbar">
-      <div>
-        <p class="eyebrow">PUBLIC GRIEVANCE INTELLIGENCE</p>
-        <h1>Evidence first. <span>Insight second.</span></h1>
+      <div class="topbar-copy">
+        <p class="eyebrow">CIVIC ANALYTICS PLATFORM</p>
+        <h1>Public grievance intelligence, <span>without guesswork.</span></h1>
+        <p>Explore verified workload data first. Move from India → State / UT → District without inventing unavailable district grievance metrics.</p>
       </div>
       <div class="top-actions">
         <span id="apiStatus" class="status-pill"><i></i> API checking</span>
-        <button id="refreshBtn" class="ghost-btn" type="button">Refresh data</button>
+        <button id="refreshBtn" class="ghost-btn" type="button">Refresh</button>
       </div>
     </header>
 
     <section id="overview" class="section">
       <div class="section-head">
-        <div><h2>National overview</h2><p id="snapshot">Loading verified snapshot…</p></div>
-        <div class="source-badge">CPGRAMS / DARPG</div>
+        <div><p class="eyebrow">01 · OVERVIEW</p><h2>National snapshot</h2><p id="snapshot">Loading verified snapshot…</p></div>
+        <span class="source-badge">CPGRAMS · DARPG</span>
       </div>
       <div id="kpis" class="kpi-grid"></div>
       <div class="overview-grid">
         <article class="panel visual-panel">
-          <div class="panel-head"><div><h3>Workload composition</h3><p>Received, disposed and current pending workload.</p></div></div>
+          <div class="panel-head"><div><h3>Workload composition</h3><p>Current pending workload shown alongside recorded receipts and disposals.</p></div></div>
           <div class="composition">
             <div id="donut" class="donut"><div><strong id="donutValue">—</strong><span>pending share</span></div></div>
             <div id="compositionLegend" class="legend"></div>
           </div>
         </article>
-        <article class="panel">
-          <div class="panel-head"><div><h3>Verified snapshot registry</h3><p>Datasets registered by CIVICLENS.</p></div></div>
+        <article class="panel snapshot-panel">
+          <div class="panel-head"><div><h3>Snapshot registry</h3><p>Only registered, validated snapshots enter historical analysis.</p></div></div>
           <div id="snapshots" class="snapshot-list">Loading…</div>
         </article>
       </div>
     </section>
 
     <section id="geography" class="section">
-      <div class="section-head"><div><p class="eyebrow">GEOGRAPHIC INTELLIGENCE</p><h2>India → State/UT → District</h2><p>Explore the administrative hierarchy without inventing unavailable grievance metrics.</p></div></div>
-      <div class="geo-grid">
-        <article class="panel geo-summary">
-          <div class="geo-icon">◎</div>
-          <div><span>State / UT records</span><strong id="geoStates">—</strong></div>
-          <div><span>Administrative districts</span><strong id="geoDistricts">—</strong></div>
-          <div><span>District metric coverage</span><strong id="geoCoverage">Checking…</strong></div>
-        </article>
-        <article class="panel">
-          <div class="panel-head"><div><h3>District coverage</h3><p id="districtCoverageNote">Checking official directory and metric coverage.</p></div></div>
-          <div id="districtBars" class="bar-chart"></div>
-        </article>
+      <div class="section-head">
+        <div><p class="eyebrow">02 · GEOGRAPHIC EXPLORER</p><h2>Navigate the hierarchy</h2><p>Choose a State / UT first, then inspect its official district directory.</p></div>
       </div>
+      <article class="panel explorer">
+        <div class="explorer-top">
+          <div>
+            <span class="step-label">GEOGRAPHIC PATH</span>
+            <div class="breadcrumb"><b>India</b><span>›</span><span id="crumbType">State / UT</span><span>›</span><b id="crumbState">Select a State / UT</b><span>›</span><span id="crumbDistrict">Select a district</span></div>
+          </div>
+          <div class="directory-badge"><i></i><span id="directoryStatus">Official directory</span></div>
+        </div>
+        <div class="explorer-controls">
+          <div class="control-field">
+            <label for="districtState">1. State / Union Territory</label>
+            <select id="districtState" aria-describedby="districtStateHelp"></select>
+            <small id="districtStateHelp">36 administrative State/UT entries in the directory.</small>
+          </div>
+          <div class="control-field">
+            <label for="districtSelect">2. District</label>
+            <select id="districtSelect" aria-describedby="districtSelectHelp"><option>Select a State / UT first</option></select>
+            <small id="districtSelectHelp">District names are loaded from the official government directory.</small>
+          </div>
+          <div class="control-field search-field">
+            <label for="districtSearch">Search within selected State / UT</label>
+            <input id="districtSearch" class="search" type="search" placeholder="e.g. Chennai, Madurai…" aria-label="Search districts in selected State or Union Territory">
+            <small>Search does not change the State / UT selection.</small>
+          </div>
+        </div>
+        <div id="districtDetail" class="district-detail"></div>
+        <div class="district-results-head">
+          <div><h3>District directory</h3><span id="districtResultCount">Select a State / UT to load districts.</span></div>
+          <button id="districtExport" class="small-btn" type="button">Export directory</button>
+        </div>
+        <div id="districtCards" class="district-grid"></div>
+      </article>
     </section>
 
     <section id="states" class="section">
       <div class="section-head">
-        <div><p class="eyebrow">STATE / UT ANALYTICS</p><h2>State Explorer</h2><p>Current verified grievance workload by State/UT.</p></div>
-        <div class="search-stack"><input id="search" class="search" type="search" placeholder="Search State / UT…" aria-label="Search State or Union Territory"><div id="stateSearchHint" class="search-hint" aria-live="polite"></div></div>
+        <div><p class="eyebrow">03 · STATE / UT ANALYTICS</p><h2>Current grievance workload</h2><p>State/UT metrics come directly from the verified CPGRAMS snapshot.</p></div>
+        <div class="state-search"><label for="search">Search State / UT</label><input id="search" class="search" type="search" placeholder="Search State / UT…" aria-label="Search State or Union Territory"></div>
       </div>
       <article class="panel table-panel">
         <div class="table-meta"><span id="rows">Loading records…</span><button id="exportBtn" class="small-btn" type="button">Export state CSV</button></div>
-        <div class="table-wrap"><table><thead><tr><th>State / UT</th><th>Received</th><th>Disposed</th><th>Pending</th><th>Disposal rate</th><th>181+ days</th><th>Districts</th></tr></thead><tbody id="table"></tbody></table></div>
-      </article>
-    </section>
-
-    <section id="districts" class="section">
-      <div class="section-head">
-        <div><p class="eyebrow">DISTRICT INTELLIGENCE</p><h2>District Directory & Drill-down</h2><p>District structure is sourced from the Government of India LGD. CPGRAMS district grievance metrics are shown only when a verified district snapshot is available.</p></div>
-        <input id="districtSearch" class="search" type="search" placeholder="Search State / UT…" aria-label="Search district directory by State or Union Territory">
-      </div>
-      <article class="panel">
-        <div class="district-toolbar">
-          <div class="select-wrap"><label for="districtState">Select State / UT</label><select id="districtState"></select></div>
-          <button id="districtOpen" class="primary-btn" type="button">Open district intelligence</button>
-          <button id="districtExport" class="small-btn" type="button">Export directory</button>
+        <div class="table-wrap">
+          <table>
+            <caption class="sr-only">Current verified State and Union Territory grievance analytics</caption>
+            <thead><tr><th>State / UT</th><th>Type</th><th>Received</th><th>Disposed</th><th>Pending</th><th>Disposal rate</th><th>181+ days</th><th>Districts</th></tr></thead>
+            <tbody id="table"></tbody>
+          </table>
         </div>
-        <div id="districtDetail" class="district-detail"></div>
-      </article>
-      <article class="panel">
-        <div class="panel-head"><div><h3>Administrative district coverage</h3><p>Counts are from the Local Government Directory snapshot; they are not grievance counts.</p></div></div>
-        <div class="table-wrap"><table><thead><tr><th>State / UT</th><th>District count</th><th>Grievance metrics</th><th>Directory date</th></tr></thead><tbody id="districtTable"></tbody></table></div>
       </article>
     </section>
 
     <section id="ageing" class="section">
-      <div class="section-head"><div><p class="eyebrow">PENDING AGEING</p><h2>Ageing intelligence</h2><p>How the verified pending workload is distributed by age bucket.</p></div></div>
+      <div class="section-head"><div><p class="eyebrow">04 · PENDING AGEING</p><h2>How long is pending workload open?</h2><p>Age buckets make the current pending workload easier to scan.</p></div></div>
       <div id="ageCards" class="age-grid"></div>
-      <article class="panel chart-panel"><div class="panel-head"><div><h3>Ageing distribution</h3><p>Absolute pending workload by bucket.</p></div></div><div id="ageChart" class="bar-chart large"></div></article>
+      <article class="panel chart-panel"><div class="panel-head"><div><h3>Ageing distribution</h3><p>Absolute pending workload by official dashboard age bucket.</p></div></div><div id="ageChart" class="bar-chart large"></div></article>
     </section>
 
     <section id="history" class="section">
-      <div class="section-head"><div><p class="eyebrow">HISTORICAL INTELLIGENCE</p><h2>Verified snapshot comparison</h2><p>No interpolation. No invented history. Changes appear only between registered snapshots.</p></div></div>
+      <div class="section-head"><div><p class="eyebrow">05 · HISTORY</p><h2>Verified snapshot comparison</h2><p>No interpolation. Historical changes appear only after multiple verified snapshots exist.</p></div></div>
       <article class="panel">
         <div id="historyStatus" class="notice">Checking snapshot history…</div>
         <div id="historyComparison" class="comparison-grid"></div>
@@ -123,12 +136,12 @@
     </section>
 
     <section id="quality" class="section">
-      <div class="section-head"><div><p class="eyebrow">DATA QUALITY</p><h2>Validation control room</h2><p>Checks applied before data is exposed to analytics.</p></div></div>
+      <div class="section-head"><div><p class="eyebrow">06 · DATA QUALITY</p><h2>Validation control room</h2><p>Checks applied before data is exposed to analytics.</p></div></div>
       <article class="panel"><div id="quality" class="quality-grid">Checking data quality…</div></article>
     </section>
 
     <section id="copilot" class="section">
-      <div class="section-head"><div><p class="eyebrow">GEMINI ANALYTICS COPILOT</p><h2>Ask the data</h2><p>Deterministic analytics are used first; Gemini explains only the verified CIVICLENS context.</p></div></div>
+      <div class="section-head"><div><p class="eyebrow">07 · AI COPILOT</p><h2>Ask the verified data</h2><p>Deterministic analytics run first; Gemini explains only the supplied CIVICLENS context.</p></div></div>
       <article class="panel copilot">
         <div id="suggestions" class="suggestions"></div>
         <div class="ask"><label class="sr-only" for="question">Ask CIVICLENS</label><input id="question" maxlength="500" placeholder="Example: How many grievances are pending in Tamil Nadu?"><button id="ask" class="primary-btn" type="button">Analyse</button></div>
@@ -138,16 +151,16 @@
     </section>
 
     <section id="methodology" class="section">
-      <div class="section-head"><div><p class="eyebrow">METHODOLOGY</p><h2>What CIVICLENS does — and does not do</h2></div></div>
+      <div class="section-head"><div><p class="eyebrow">08 · METHODOLOGY</p><h2>Trace every number</h2><p>Clear boundaries keep the product useful without overstating what the source data contains.</p></div></div>
       <article class="panel methodology">
-        <div><h3>Verified data path</h3><p>Official source → controlled ingestion → schema validation → snapshot registry → analytics API → visual layer → grounded AI explanation.</p></div>
-        <div><h3>District rule</h3><p>Administrative district counts come from the Government of India Local Government Directory. District grievance metrics are never derived by splitting State/UT totals.</p></div>
-        <div><h3>Interpretation rule</h3><p>CIVICLENS reports descriptive workload patterns. Project-defined metrics such as pressure index are exploratory and are not official government scores.</p></div>
-        <div><h3>Data source</h3><p><a href="https://pgportal.gov.in/darpgdashboard" target="_blank" rel="noopener">Official CPGRAMS dashboard ↗</a> · <a href="https://data.gov.in/catalog/local-government-directory-lgd" target="_blank" rel="noopener">Official LGD catalog ↗</a></p></div>
+        <div><span class="method-icon">01</span><h3>Verified data path</h3><p>Official source → controlled ingestion → validation → snapshot registry → analytics API → visual layer → grounded AI.</p></div>
+        <div><span class="method-icon">02</span><h3>Geographic integrity</h3><p>State/UT grievance totals are never split into districts. District names come from the Government of India directory.</p></div>
+        <div><span class="method-icon">03</span><h3>Interpretation</h3><p>Charts describe workload patterns. Project-defined metrics are exploratory and are not official government scores.</p></div>
+        <div><span class="method-icon">04</span><h3>Primary sources</h3><p><a href="https://pgportal.gov.in/darpgdashboard" target="_blank" rel="noopener">CPGRAMS / DARPG ↗</a><br><a href="https://igod.gov.in/districts" target="_blank" rel="noopener">Government District Directory ↗</a></p></div>
       </article>
     </section>
 
-    <footer>© CIVICLENS · Evidence-led public grievance analytics · Built for transparent, reproducible analysis.</footer>
+    <footer><strong>CIVICLENS</strong><span>Evidence-led public grievance analytics</span><span>Government-source traceability built into the interface.</span></footer>
   </main>
 </div>
 <script src="app.js"></script>
