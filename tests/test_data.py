@@ -141,3 +141,15 @@ def test_sqlite_foreign_keys_are_enabled():
     init_db()
     with connect() as conn:
         assert conn.execute("PRAGMA foreign_keys").fetchone()[0] == 1
+
+
+def test_igod_district_parser_handles_linked_and_plain_names():
+    from backend.app.districts import _parse_igod_districts
+    markup = """
+    <html><body>
+      <h2>Districts - Example</h2>
+      <a href="/district/a">Alpha</a><a href="/sub/a">Sub Districts</a><a href="/blocks/a">Blocks</a>
+      Beta District <a href="/sub/b">Sub Districts</a><a href="/blocks/b">Blocks</a>
+    </body></html>
+    """
+    assert _parse_igod_districts(markup, expected=2) == ["Alpha", "Beta District"]
