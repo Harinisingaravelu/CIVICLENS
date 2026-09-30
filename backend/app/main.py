@@ -13,8 +13,9 @@ from .ingestion import ingest_csv_bytes
 from .history import list_history, compare_snapshots, latest_comparison, state_history
 from .historical_ai import historical_result
 from .monitoring import record_request, metrics, timer
+from .districts import coverage as district_coverage, district_table, state_district_detail, export_directory_csv
 
-API_VERSION = "1.6.0"
+API_VERSION = "1.7.0"
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -62,6 +63,21 @@ def get_states(search: str|None=Query(default=None,max_length=100),limit:int=Que
 
 @app.get("/api/v1/ageing")
 def get_ageing(): return ageing()
+
+@app.get("/api/v1/districts/coverage")
+def get_district_coverage(): return district_coverage()
+
+@app.get("/api/v1/districts")
+def get_districts(search: str|None=Query(default=None,max_length=100),limit:int=Query(default=100,ge=1,le=100)):
+    return district_table(search=search,limit=limit)
+
+@app.get("/api/v1/districts/{state_ut}")
+def get_district_state(state_ut:str=Path(...,min_length=1,max_length=100)):
+    result = state_district_detail(state_ut)
+    if result.get("status") == "not_found":
+        raise HTTPException(status_code=404, detail=result["reason"])
+    return result
+
 
 @app.get("/api/v1/insights")
 def get_insights(): return insights()
@@ -117,3 +133,7 @@ async def ingest_snapshot(file: UploadFile=File(...)):
 @app.get("/api/v1/export/csv")
 def export_csv():
     return Response(content=csv_bytes(),media_type="text/csv",headers={"Content-Disposition":"attachment; filename=civic-lens-validated.csv"})
+
+@app.get("/api/v1/export/district-directory")
+def export_district_directory():
+    return Response(content=export_directory_csv(),media_type="text/csv",headers={"Content-Disposition":"attachment; filename=civiclens-district-directory.csv"})
