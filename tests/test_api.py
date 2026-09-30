@@ -163,3 +163,16 @@ def test_data_quality(client):
     assert body["negative_numeric_values"]==0
     assert body["ageing_reconciliation_errors"]==0
     assert body["source_is_https"] is True
+
+
+def test_ai_falls_back_to_deterministic_answer_when_gemini_fails(client, monkeypatch):
+    from backend.app import ai_routes
+    def fail_gemini(question, context):
+        raise RuntimeError("Gemini unavailable")
+    monkeypatch.setattr(ai_routes, "ask_gemini", fail_gemini)
+    r=client.post("/api/v1/ai/ask",json={"question":"How many grievances are pending in Tamil Nadu?"})
+    assert r.status_code==200
+    body=r.json()
+    assert body["answer_data"]["state_ut"]=="Tamil Nadu"
+    assert body["grounding"]=="deterministic_dataset_fallback"
+    assert "6,262" in body["answer"]
