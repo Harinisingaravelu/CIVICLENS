@@ -65,8 +65,25 @@ def ask(request: AskRequest):
 
     try:
         answer = ask_gemini(question, context)
-    except Exception as exc:
-        raise HTTPException(status_code=502, detail=f"Gemini request failed: {type(exc).__name__}") from exc
+    except Exception:
+        # Keep the analytics product usable even if the optional Gemini service
+        # is unavailable, rate-limited, or temporarily rejects the configured key.
+        # Deterministic answers remain fully grounded in the verified dataset.
+        if deterministic:
+            answer = deterministic["calculation"]
+            grounding = "deterministic_dataset_fallback"
+        elif historical is not None:
+            answer = (
+                "Gemini is temporarily unavailable. The verified historical result "
+                "is shown below without adding unsupported interpretation."
+            )
+            grounding = "verified_snapshot_history_fallback"
+        else:
+            answer = (
+                "Gemini is temporarily unavailable. Please retry shortly. "
+                "The dashboard's deterministic analytics remain available."
+            )
+            grounding = "dataset_context_fallback"
 
     return {
         "question": question,
