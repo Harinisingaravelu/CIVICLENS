@@ -1,5 +1,6 @@
 from pathlib import Path
 import pandas as pd
+from .districts import canonical_state, state_type
 
 DATA_FILE = Path(__file__).resolve().parents[2] / "data" / "cpgrams_snapshot.csv"
 REQUIRED_COLUMNS = [
