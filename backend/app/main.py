@@ -13,7 +13,7 @@ from .ingestion import ingest_csv_bytes
 from .history import list_history, compare_snapshots, latest_comparison, state_history
 from .historical_ai import historical_result
 from .monitoring import record_request, metrics, timer
-from .districts import coverage as district_coverage, district_table, state_district_detail, export_directory_csv
+from .districts import coverage as district_coverage, district_table, district_items, state_district_detail, export_directory_csv
 
 API_VERSION = "1.7.0"
 
@@ -70,6 +70,15 @@ def get_district_coverage(): return district_coverage()
 @app.get("/api/v1/districts")
 def get_districts(search: str|None=Query(default=None,max_length=100),limit:int=Query(default=100,ge=1,le=100)):
     return district_table(search=search,limit=limit)
+
+@app.get("/api/v1/districts/{state_ut}/items")
+def get_district_items(state_ut:str=Path(...,min_length=1,max_length=100),search:str|None=Query(default=None,max_length=100)):
+    try:
+        return district_items(state_ut, search=search)
+    except KeyError:
+        raise HTTPException(status_code=404, detail="State/UT not found in the official district directory.")
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
 
 @app.get("/api/v1/districts/{state_ut}")
 def get_district_state(state_ut:str=Path(...,min_length=1,max_length=100)):
