@@ -7,7 +7,9 @@ from dotenv import load_dotenv
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 load_dotenv(BACKEND_DIR / ".env")
 
-DEFAULT_MODEL = "gemini-2.5-flash"
+DEFAULT_MODEL = "gemini-3.8-flash"
+FALLBACK_MODEL = "gemini-2.5-flash"
+API_BASE = "https://generativelanguage.googleapis.com/v1beta"
 
 
 def _safe_error(response: httpx.Response) -> str:
@@ -25,35 +27,8 @@ def _safe_error(response: httpx.Response) -> str:
     return f"HTTP {response.status_code}"
 
 
-def ask_gemini(question: str, context: str) -> str:
-    api_key = (os.getenv("GEMINI_API_KEY") or "").strip()
-    model = (os.getenv("GEMINI_MODEL") or DEFAULT_MODEL).strip()
-
-    if not api_key:
-        return "Gemini is not configured. Add GEMINI_API_KEY to the service environment."
-
-    prompt = f"""You are CIVICLENS Analytics Copilot.
-
-Grounding rules:
-- Answer only from the supplied CIVICLENS dataset context.
-- Never invent facts, causes, dates, trends, rankings, or metrics.
-- Mention the snapshot date/reporting period when relevant.
-- Clearly distinguish dataset facts from calculations and interpretation.
-- pressure_index is a project-defined exploratory metric, not an official government metric.
-- Do not label a state or department as good/bad based on this snapshot.
-- If the dataset cannot answer the question, say so.
-
-DATA CONTEXT:
-{context}
-
-USER QUESTION:
-{question}
-"""
-
-    url = (
-        "https://generativelanguage.googleapis.com/v1beta/"
-        f"models/{model}:generateContent"
-    )
+def _request_model(api_key: str, model: str, prompt: str) -> str:
+    url = f"{API_BASE}/models/{model}:generateContent"
     payload = {
         "contents": [
             {
@@ -93,3 +68,42 @@ USER QUESTION:
         raise RuntimeError("Gemini returned an unreadable response.") from exc
 
     return answer or "No grounded response was returned."
+
+
+def ask_gemini(question: str, context: str) -> str:
+    api_key = (os.getenv("GEMINI_API_KEY") or "").strip()
+    configured_model = (os.getenv("GEMINI_MODEL") or DEFAULT_MODEL).strip()
+
+    if not api_key:
+        return "Gemini is not configured. Add GEMINI_API_KEY to the service environment."
+
+    prompt = f"""You are CIVICLENS Analytics Copilot.
+
+Grounding rules:
+- Answer only from the supplied CIVICLENS dataset context.
+- Never invent facts, causes, dates, trends, rankings, or metrics.
+- Mention the snapshot date/reporting period when relevant.
+- Clearly distinguish dataset facts from calculations and interpretation.
+- pressure_index is a project-defined exploratory metric, not an official government metric.
+- Do not label a state or department as good/bad based on this snapshot.
+- If the dataset cannot answer the question, say so.
+
+DATA CONTEXT:
+{context}
+
+USER QUESTION:
+{question}
+"""
+
+    models = [configured_model]
+    if configured_model != FALLBACK_MODEL:
+        models.append(FALLBACK_MODEL)
+
+    errors = []
+    for model in models:
+        try:
+            return _request_model(api_key, model, prompt)
+        except RuntimeError as exc:
+            errors.append(f"{model}: {exc}")
+
+    raise RuntimeError("Gemini request failed. " + " | ".join(errors))
